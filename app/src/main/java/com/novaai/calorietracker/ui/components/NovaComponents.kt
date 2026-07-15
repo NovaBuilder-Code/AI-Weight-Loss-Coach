@@ -197,6 +197,50 @@ fun SectionHeader(
     }
 }
 
+/** Settings-style row with an icon, title, subtitle and a trailing switch. */
+@Composable
+fun NovaToggleRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    accentColor: Color = GreenPrimary
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(accentColor.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = NavyDeep,
+                checkedTrackColor = GreenPrimary,
+                uncheckedThumbColor = WhiteAlpha60,
+                uncheckedTrackColor = NavyElevated,
+                uncheckedBorderColor = NavyBorder
+            )
+        )
+    }
+}
+
 /**
  * Nova's official circular avatar. Use this everywhere the AI coach is represented
  * (chat, home greeting, settings, about, notifications, etc.) so her identity stays

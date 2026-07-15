@@ -117,7 +117,12 @@ fun ProfileScreen(navController: NavController) {
                 )
             },
             confirmButton = {
-                TextButton(onClick = { showSignOutDialog = false }) {
+                TextButton(onClick = {
+                    showSignOutDialog = false
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }) {
                     Text(stringResource(R.string.sign_out), color = ErrorRed, fontWeight = FontWeight.Bold)
                 }
             },

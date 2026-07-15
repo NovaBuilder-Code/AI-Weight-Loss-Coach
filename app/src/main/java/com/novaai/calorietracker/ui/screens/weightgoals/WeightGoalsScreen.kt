@@ -5,35 +5,34 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
-import kotlinx.coroutines.launch
 
-private const val CURRENT_WEIGHT = "74.2"
-private const val GOAL_WEIGHT = "65"
-private const val PROGRESS_KG = "-3.8"
-private const val PROGRESS_FRACTION = 0.29f
+private const val START_WEIGHT = 78.0f
+private const val GOAL_WEIGHT = 65.0f
 
 @Composable
 fun WeightGoalsScreen(navController: NavController) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val updateComingSoon = stringResource(R.string.weight_goals_snackbar)
+    var currentWeight by remember { mutableFloatStateOf(74.2f) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+
+    val progressKg = ((currentWeight - START_WEIGHT) * 10).toInt() / 10f
+    val progressFraction = ((START_WEIGHT - currentWeight) / (START_WEIGHT - GOAL_WEIGHT)).coerceIn(0f, 1f)
 
     Scaffold(
-        containerColor = NavyDeep,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        containerColor = NavyDeep
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -64,27 +63,27 @@ fun WeightGoalsScreen(navController: NavController) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     StatChip(
                         label = stringResource(R.string.weight_goals_current),
-                        value = CURRENT_WEIGHT,
+                        value = "$currentWeight",
                         unit = stringResource(R.string.kg),
                         modifier = Modifier.fillMaxWidth(),
                         accentColor = White
                     )
                     StatChip(
                         label = stringResource(R.string.weight_goals_goal),
-                        value = GOAL_WEIGHT,
+                        value = "65",
                         unit = stringResource(R.string.kg),
                         modifier = Modifier.fillMaxWidth(),
                         accentColor = GreenPrimary
                     )
                     StatChip(
                         label = stringResource(R.string.weight_goals_progress),
-                        value = PROGRESS_KG,
+                        value = "$progressKg",
                         unit = stringResource(R.string.kg),
                         modifier = Modifier.fillMaxWidth(),
                         accentColor = InfoBlue
                     )
                     LinearProgressIndicator(
-                        progress = { PROGRESS_FRACTION },
+                        progress = { progressFraction },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
@@ -128,13 +127,60 @@ fun WeightGoalsScreen(navController: NavController) {
 
             NovaPrimaryButton(
                 text = stringResource(R.string.weight_goals_update_button),
-                onClick = {
-                    scope.launch { snackbarHostState.showSnackbar(updateComingSoon) }
-                },
+                onClick = { showUpdateDialog = true },
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(Modifier.height(24.dp))
         }
     }
+
+    if (showUpdateDialog) {
+        UpdateWeightDialog(
+            onDismiss = { showUpdateDialog = false },
+            onSave = { kg ->
+                currentWeight = (kg * 10).toInt() / 10f
+                showUpdateDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun UpdateWeightDialog(onDismiss: () -> Unit, onSave: (Float) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    val parsed = text.replace(',', '.').toFloatOrNull()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = NavySurface,
+        title = { Text(stringResource(R.string.weight_dialog_title), color = White) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(stringResource(R.string.weight_dialog_label), color = WhiteAlpha60) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = GreenPrimary,
+                    unfocusedBorderColor = NavyBorder,
+                    focusedTextColor = White,
+                    unfocusedTextColor = White,
+                    cursorColor = GreenPrimary,
+                    focusedContainerColor = NavyElevated,
+                    unfocusedContainerColor = NavyElevated
+                )
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { parsed?.let { onSave(it) } },
+                enabled = parsed != null && parsed in 20f..300f
+            ) {
+                Text(stringResource(R.string.save), color = GreenPrimary, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = WhiteAlpha60) }
+        }
+    )
 }

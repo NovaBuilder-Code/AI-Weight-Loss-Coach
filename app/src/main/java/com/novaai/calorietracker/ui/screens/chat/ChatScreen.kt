@@ -96,7 +96,13 @@ fun ChatScreen(navController: NavController) {
             .fillMaxSize()
             .background(NavyDeep)
     ) {
-        ChatHeader(navController = navController)
+        ChatHeader(
+            navController = navController,
+            onClearChat = {
+                messages = initialMessages
+                isTyping = false
+            }
+        )
 
         // Messages
         LazyColumn(
@@ -140,7 +146,7 @@ fun ChatScreen(navController: NavController) {
 }
 
 @Composable
-private fun ChatHeader(navController: NavController) {
+private fun ChatHeader(navController: NavController, onClearChat: () -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
@@ -198,7 +204,10 @@ private fun ChatHeader(navController: NavController) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.chat_menu_clear), color = White) },
                     leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = WhiteAlpha60) },
-                    onClick = { menuExpanded = false }
+                    onClick = {
+                        menuExpanded = false
+                        onClearChat()
+                    }
                 )
             }
         }

@@ -260,4 +260,139 @@
     <string name="placeholder_water_sub">Log every glass and stay on top of your daily hydration goal. Nova AI will remind you to drink more water when you fall behind.</string>
     <string name="placeholder_sleep_title">Sleep Tracker</string>
     <string name="placeholder_sleep_sub">Track your sleep duration and quality. Good sleep is essential for weight loss — Nova AI factors your rest into your daily health coaching.</string>
+
+    <!-- Daily Streaks (interactive) -->
+    <string name="streaks_completed_button">Completed Today ✓</string>
+    <string name="streaks_completed_snackbar">🔥 Goal completed — streak extended!</string>
+
+    <!-- Calorie Tracker (MVP) -->
+    <string name="calorie_section_meals">Today\'s Meals</string>
+    <string name="calorie_add_meal_cd">Add meal</string>
+    <string name="calorie_dialog_title">Add Meal</string>
+    <string name="calorie_dialog_name">Meal name</string>
+    <string name="calorie_dialog_kcal">Calories (kcal)</string>
+    <string name="calorie_add_button">Add</string>
+    <string name="calorie_type_breakfast">Breakfast</string>
+    <string name="calorie_type_lunch">Lunch</string>
+    <string name="calorie_type_snack">Snack</string>
+    <string name="calorie_meal1">Oatmeal &amp; Berries</string>
+    <string name="calorie_meal2">Grilled Chicken Salad</string>
+    <string name="calorie_meal3">Greek Yogurt &amp; Honey</string>
+
+    <!-- Meal Suggestions (MVP) -->
+    <string name="meals_header">Nova\'s picks based on your remaining calories today</string>
+    <string name="meals_item1_title">Grilled Salmon Bowl</string>
+    <string name="meals_item1_sub">Salmon, quinoa, avocado &amp; greens</string>
+    <string name="meals_item2_title">Chicken Veggie Stir-Fry</string>
+    <string name="meals_item2_sub">Chicken breast, broccoli, peppers &amp; rice</string>
+    <string name="meals_item3_title">Greek Yogurt Parfait</string>
+    <string name="meals_item3_sub">Yogurt, granola, berries &amp; honey</string>
+    <string name="meals_item4_title">Lentil Power Bowl</string>
+    <string name="meals_item4_sub">Lentils, roasted veggies &amp; tahini</string>
+    <string name="meals_tag_protein">High protein</string>
+    <string name="meals_tag_balanced">Balanced</string>
+    <string name="meals_tag_light">Light</string>
+    <string name="meals_tag_veggie">Vegetarian</string>
+
+    <!-- Settings (MVP) -->
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_metric">Metric Units</string>
+    <string name="settings_metric_sub">Kilograms, kilometres, litres</string>
+    <string name="settings_sounds">Sounds</string>
+    <string name="settings_sounds_sub">In-app sound effects</string>
+    <string name="settings_haptics">Vibration</string>
+    <string name="settings_haptics_sub">Haptic feedback</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_notifications_row">Notifications</string>
+    <string name="settings_notifications_row_sub">Manage reminders &amp; alerts</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_value">English</string>
+    <string name="settings_version">App Version</string>
+
+    <!-- Sleep Tracker (MVP) -->
+    <string name="sleep_last_night">Last Night</string>
+    <string name="sleep_quality">Sleep Quality</string>
+    <string name="sleep_quality_good">Good</string>
+    <string name="sleep_section_week">This Week</string>
+    <string name="sleep_log_button">Log Sleep</string>
+    <string name="sleep_dialog_title">Log Last Night\'s Sleep</string>
+    <string name="sleep_dialog_label">Hours slept (e.g. 7.5)</string>
+    <string name="sleep_bedtime">Bedtime</string>
+    <string name="sleep_wakeup">Wake Up</string>
+    <string name="sleep_tip_title">Nova\'s Sleep Tip</string>
+    <string name="sleep_tip_text">Consistent bedtimes help regulate your metabolism. Aim for 7–9 hours to support your weight goals.</string>
+
+    <!-- Water Tracker (MVP) -->
+    <string name="water_today">Today\'s Intake</string>
+    <string name="water_goal_label">Daily goal: 2.5 L</string>
+    <string name="water_add_glass">+ Glass (250 ml)</string>
+    <string name="water_add_bottle">+ Bottle (500 ml)</string>
+    <string name="water_undo">Undo last</string>
+    <string name="water_goal_reached">🎉 Daily goal reached!</string>
+    <string name="water_tip_title">Nova\'s Hydration Tip</string>
+    <string name="water_tip_text">Drink a glass of water before each meal — it supports digestion and helps control appetite.</string>
+
+    <!-- Goals (MVP) -->
+    <string name="goals_section">Daily Targets</string>
+    <string name="goals_hint">Tap a goal to adjust it. Nova AI uses these targets to coach you.</string>
+    <string name="goals_calories">Daily Calories</string>
+    <string name="goals_steps">Daily Steps</string>
+    <string name="goals_water">Water (L)</string>
+    <string name="goals_sleep">Sleep (hours)</string>
+    <string name="goals_weight">Goal Weight (kg)</string>
+    <string name="goals_dialog_title">Edit Goal</string>
+    <string name="goals_dialog_label">New value</string>
+
+    <!-- Notifications (MVP) -->
+    <string name="notif_section">Reminders</string>
+    <string name="notif_meals">Meal Reminders</string>
+    <string name="notif_meals_sub">Log breakfast, lunch &amp; dinner</string>
+    <string name="notif_water">Hydration Alerts</string>
+    <string name="notif_water_sub">Reminders to drink water</string>
+    <string name="notif_weighin">Weigh-In Reminder</string>
+    <string name="notif_weighin_sub">Weekly progress check</string>
+    <string name="notif_steps">Step Goal Alerts</string>
+    <string name="notif_steps_sub">When you\'re close to your goal</string>
+    <string name="notif_motivation">Daily Motivation</string>
+    <string name="notif_motivation_sub">A boost from Nova every morning</string>
+
+    <!-- Personal Info (MVP) -->
+    <string name="pi_name">Name</string>
+    <string name="pi_email">Email</string>
+    <string name="pi_age">Age</string>
+    <string name="pi_height">Height (cm)</string>
+    <string name="pi_weight">Weight (kg)</string>
+    <string name="pi_save">Save Changes</string>
+    <string name="pi_saved">Changes saved ✓</string>
+
+    <!-- Privacy (MVP) -->
+    <string name="privacy_section_controls">Data Controls</string>
+    <string name="privacy_analytics">Anonymous Analytics</string>
+    <string name="privacy_analytics_sub">Help improve Nova with usage data</string>
+    <string name="privacy_personal">Personalized Coaching</string>
+    <string name="privacy_personal_sub">Let Nova learn from your habits</string>
+    <string name="privacy_section_data">Your Data</string>
+    <string name="privacy_local_title">Stored on your device</string>
+    <string name="privacy_local_text">In this version, all your health data stays on your phone. Nothing is uploaded or shared with anyone.</string>
+
+    <!-- Help & Support (MVP) -->
+    <string name="help_section_faq">Frequently Asked</string>
+    <string name="help_faq1_q">How does Nova estimate my calories?</string>
+    <string name="help_faq1_a">Nova combines your logged meals with your activity to estimate daily calories in and out.</string>
+    <string name="help_faq2_q">Can I change my goals later?</string>
+    <string name="help_faq2_a">Yes — open Profile → Goals and tap any target to adjust it at any time.</string>
+    <string name="help_faq3_q">Does the app work offline?</string>
+    <string name="help_faq3_a">Yes. All tracking works offline; AI features will need a connection when they arrive.</string>
+    <string name="help_faq4_q">How do streaks work?</string>
+    <string name="help_faq4_a">Complete at least one healthy habit each day to keep your streak alive.</string>
+    <string name="help_section_contact">Contact Us</string>
+    <string name="help_email_label">Email Support</string>
+    <string name="help_email">support@novaai.app</string>
+    <string name="help_response">We usually reply within 24 hours</string>
+
+    <!-- About (MVP) -->
+    <string name="about_version_label">Version</string>
+    <string name="about_version_value">1.0.0</string>
+    <string name="about_description">Nova AI is your personal health coach — calorie tracking, weight goals, walking, hydration, sleep and daily streaks, all guided by Nova.</string>
+    <string name="about_made">Built with ❤️ for your health journey</string>
 </resources>

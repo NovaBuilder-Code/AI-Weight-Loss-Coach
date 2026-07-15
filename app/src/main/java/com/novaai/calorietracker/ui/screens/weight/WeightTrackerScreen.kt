@@ -27,10 +27,13 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private data class WeightEntry(val day: String, val kg: Float)
 
-private val weightHistory = listOf(
+private val initialWeightHistory = listOf(
     WeightEntry("Jun 19", 75.8f),
     WeightEntry("Jun 20", 75.5f),
     WeightEntry("Jun 21", 75.2f),
@@ -43,6 +46,8 @@ private val weightHistory = listOf(
 @Composable
 fun WeightTrackerScreen(navController: NavController) {
     var showLogDialog by remember { mutableStateOf(false) }
+    val weightHistory = remember { initialWeightHistory.toMutableStateList() }
+    val current = weightHistory.last().kg
 
     LazyColumn(
         modifier = Modifier
@@ -59,9 +64,9 @@ fun WeightTrackerScreen(navController: NavController) {
                 )
             }
         }
-        item { WeightHeroSection() }
+        item { WeightHeroSection(current) }
         item { Spacer(Modifier.height(20.dp)) }
-        item { WeightChartCard() }
+        item { WeightChartCard(weightHistory.takeLast(7)) }
         item { Spacer(Modifier.height(20.dp)) }
         item {
             SectionHeader(
@@ -75,17 +80,28 @@ fun WeightTrackerScreen(navController: NavController) {
             WeightHistoryRow(entry, i == 0)
         }
         item { Spacer(Modifier.height(20.dp)) }
-        item { WeightGoalCard() }
+        item { WeightGoalCard(current) }
     }
 
     if (showLogDialog) {
-        LogWeightDialog(onDismiss = { showLogDialog = false })
+        LogWeightDialog(
+            onDismiss = { showLogDialog = false },
+            onSave = { kg ->
+                val today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
+                val lastIndex = weightHistory.lastIndex
+                if (weightHistory[lastIndex].day == today) {
+                    weightHistory[lastIndex] = WeightEntry(today, kg)
+                } else {
+                    weightHistory.add(WeightEntry(today, kg))
+                }
+                showLogDialog = false
+            }
+        )
     }
 }
 
 @Composable
-private fun WeightHeroSection() {
-    val current = 74.2f
+private fun WeightHeroSection(current: Float) {
     val start   = 80.0f
     val goal    = 70.0f
     val progress = ((start - current) / (start - goal)).coerceIn(0f, 1f)
@@ -147,7 +163,7 @@ private fun WeightHeroSection() {
 }
 
 @Composable
-private fun WeightChartCard() {
+private fun WeightChartCard(weightHistory: List<WeightEntry>) {
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
@@ -264,7 +280,8 @@ private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
 }
 
 @Composable
-private fun WeightGoalCard() {
+private fun WeightGoalCard(current: Float) {
+    val remaining = ((current - 70.0f).coerceAtLeast(0f) * 10).toInt() / 10f
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
@@ -275,14 +292,15 @@ private fun WeightGoalCard() {
             }
             StatChip(label = stringResource(R.string.weight_start),     value = "80.0", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = WhiteAlpha60)
             StatChip(label = stringResource(R.string.weight_goal),      value = "70.0", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = GreenPrimary)
-            StatChip(label = stringResource(R.string.weight_remaining), value = "4.2",  unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
+            StatChip(label = stringResource(R.string.weight_remaining), value = "$remaining", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
         }
     }
 }
 
 @Composable
-private fun LogWeightDialog(onDismiss: () -> Unit) {
+private fun LogWeightDialog(onDismiss: () -> Unit, onSave: (Float) -> Unit) {
     var text by remember { mutableStateOf("") }
+    val parsed = text.replace(',', '.').toFloatOrNull()
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = NavySurface,
@@ -305,7 +323,10 @@ private fun LogWeightDialog(onDismiss: () -> Unit) {
             )
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = { parsed?.let { onSave(it) } },
+                enabled = parsed != null && parsed in 20f..300f
+            ) {
                 Text(stringResource(R.string.save), color = GreenPrimary, fontWeight = FontWeight.Bold)
             }
         },

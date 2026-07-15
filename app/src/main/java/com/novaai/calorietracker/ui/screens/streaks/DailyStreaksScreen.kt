@@ -7,9 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -32,7 +30,10 @@ private data class StreakDay(val label: String, val completed: Boolean)
 fun DailyStreaksScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val comingSoonMessage = stringResource(R.string.streaks_snackbar)
+    val completedMessage = stringResource(R.string.streaks_completed_snackbar)
+
+    var todayCompleted by remember { mutableStateOf(false) }
+    var currentStreak by remember { mutableIntStateOf(CURRENT_STREAK) }
 
     val week = listOf(
         StreakDay(stringResource(R.string.streaks_day_mon), true),
@@ -41,7 +42,7 @@ fun DailyStreaksScreen(navController: NavController) {
         StreakDay(stringResource(R.string.streaks_day_thu), false),
         StreakDay(stringResource(R.string.streaks_day_fri), false),
         StreakDay(stringResource(R.string.streaks_day_sat), false),
-        StreakDay(stringResource(R.string.streaks_day_sun), false)
+        StreakDay(stringResource(R.string.streaks_day_sun), todayCompleted)
     )
 
     Scaffold(
@@ -86,7 +87,7 @@ fun DailyStreaksScreen(navController: NavController) {
                         modifier = Modifier.size(64.dp)
                     )
                     Text(
-                        text = "$CURRENT_STREAK",
+                        text = "$currentStreak",
                         fontSize = 44.sp,
                         fontWeight = FontWeight.Bold,
                         color = White
@@ -105,7 +106,7 @@ fun DailyStreaksScreen(navController: NavController) {
                     ) {
                         StatChip(
                             label = stringResource(R.string.streaks_current_streak),
-                            value = "$CURRENT_STREAK",
+                            value = "$currentStreak",
                             unit = stringResource(R.string.streaks_days_unit),
                             modifier = Modifier.weight(1f),
                             accentColor = WarningAmber
@@ -166,10 +167,18 @@ fun DailyStreaksScreen(navController: NavController) {
             Spacer(Modifier.height(24.dp))
 
             NovaPrimaryButton(
-                text = stringResource(R.string.streaks_complete_button),
+                text = if (todayCompleted)
+                    stringResource(R.string.streaks_completed_button)
+                else
+                    stringResource(R.string.streaks_complete_button),
                 onClick = {
-                    scope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    if (!todayCompleted) {
+                        todayCompleted = true
+                        currentStreak += 1
+                        scope.launch { snackbarHostState.showSnackbar(completedMessage) }
+                    }
                 },
+                enabled = !todayCompleted,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 

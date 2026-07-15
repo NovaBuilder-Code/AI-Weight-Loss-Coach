@@ -45,13 +45,13 @@ private data class OnboardingFeature(
 fun WelcomeScreen(navController: NavController) {
     val features = listOf(
         OnboardingFeature(Icons.Default.SmartToy, R.string.onboarding_feature_ai_coach, Screen.AICoach.route),
-        OnboardingFeature(Icons.Default.LocalFireDepartment, R.string.onboarding_feature_calorie_tracking),
-        OnboardingFeature(Icons.Default.CameraAlt, R.string.onboarding_feature_photo_scan),
-        OnboardingFeature(Icons.Default.DirectionsWalk, R.string.onboarding_feature_walking_goals),
+        OnboardingFeature(Icons.Default.LocalFireDepartment, R.string.onboarding_feature_calorie_tracking, Screen.Calories.route),
+        OnboardingFeature(Icons.Default.CameraAlt, R.string.onboarding_feature_photo_scan, Screen.FoodScan.route),
+        OnboardingFeature(Icons.Default.DirectionsWalk, R.string.onboarding_feature_walking_goals, Screen.Walking.route),
         OnboardingFeature(Icons.Default.MonitorWeight, R.string.onboarding_feature_weight_goals, Screen.WeightGoals.route),
-        OnboardingFeature(Icons.Default.RestaurantMenu, R.string.onboarding_feature_meal_suggestions),
+        OnboardingFeature(Icons.Default.RestaurantMenu, R.string.onboarding_feature_meal_suggestions, Screen.Meals.route),
         OnboardingFeature(Icons.Default.EmojiEvents, R.string.onboarding_feature_daily_streaks, Screen.Streaks.route),
-        OnboardingFeature(Icons.Default.NightsStay, R.string.onboarding_feature_sleep_tracker)
+        OnboardingFeature(Icons.Default.NightsStay, R.string.onboarding_feature_sleep_tracker, Screen.Sleep.route)
     )
 
     Column(
