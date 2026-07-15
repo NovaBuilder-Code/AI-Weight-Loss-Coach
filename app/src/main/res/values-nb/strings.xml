@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nova AI</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_home">Hjem</string>
+    <string name="nav_chat">Nova AI</string>
+    <string name="nav_weight">Vekt</string>
+    <string name="nav_steps">Skritt</string>
+
+    <!-- Common -->
+    <string name="back">Tilbake</string>
+    <string name="save">Lagre</string>
+    <string name="cancel">Avbryt</string>
+    <string name="coming_soon">Kommer snart</string>
+    <string name="coming_in_v11">Kommer i v1.1</string>
+    <string name="kcal">kcal</string>
+    <string name="kg">kg</string>
+    <string name="km">km</string>
+    <string name="steps_unit">skritt</string>
+    <string name="liters">L</string>
+    <string name="sign_out">Logg ut</string>
+
+    <!-- Home Screen -->
+    <string name="home_greeting">God morgen,</string>
+    <string name="home_user_name">Alex 👋</string>
+    <string name="home_section_todays_stats">Dagens statistikk</string>
+    <string name="home_section_quick_actions">Hurtighandlinger</string>
+    <string name="home_section_macro_breakdown">Makrofordeling</string>
+    <string name="home_calories_today">Kalorier i dag</string>
+    <string name="home_goal_format">/ %1$d kcal</string>
+    <string name="home_remaining">Gjenstår</string>
+    <string name="home_burned">Forbrent</string>
+    <string name="home_net">Netto</string>
+    <string name="home_stat_steps">Skritt</string>
+    <string name="home_stat_weight">Vekt</string>
+    <string name="home_stat_water">Vann</string>
+    <string name="home_stat_sleep">Søvn</string>
+    <string name="home_action_scan_food">Skann mat</string>
+    <string name="home_action_add_meal">Legg til måltid</string>
+    <string name="home_action_meal_ideas">Måltidsideer</string>
+    <string name="home_action_premium">Premium</string>
+    <string name="home_insight_title">Nova AI-innsikt</string>
+    <string name="home_insight_message">Du er 580 kcal under målet ditt. Et proteinrikt måltid til middag vil hjelpe deg å holde deg på sporet i kveld.</string>
+    <string name="home_macro_protein">Protein</string>
+    <string name="home_macro_carbs">Karbohydrater</string>
+    <string name="home_macro_fat">Fett</string>
+    <string name="home_macro_fiber">Fiber</string>
+    <string name="home_streaks_cd">Rekker</string>
+    <string name="home_profile_cd">Profil</string>
+    <string name="home_weight_goals_title">Vektmål</string>
+    <string name="home_weight_goals_sub">Følg fremgangen din mot målvekten</string>
+    <string name="home_streaks_title">Daglige rekker</string>
+    <string name="home_streaks_sub">Hold farten oppe</string>
+
+    <!-- Chat Screen -->
+    <string name="chat_status">Tilkoblet · Din helsecoach</string>
+    <string name="chat_input_hint">Spør Nova om hva som helst…</string>
+    <string name="chat_options_cd">Alternativer</string>
+    <string name="chat_menu_settings">Innstillinger</string>
+    <string name="chat_menu_profile">Profil</string>
+    <string name="chat_menu_clear">Tøm chat</string>
+    <string name="chat_send_cd">Send</string>
+    <string name="chat_initial_message">Hei! Jeg er Nova, din personlige AI-helsecoach. Jeg er her for å hjelpe deg å nå målene dine – ernæring, trening, vekt og mer. Hva kan jeg hjelpe deg med i dag?</string>
+    <string name="chat_quick_dinner">Hva bør jeg spise til middag?</string>
+    <string name="chat_quick_on_track">Er jeg på rett spor i dag?</string>
+    <string name="chat_quick_workout">Foreslå en treningsøkt</string>
+    <string name="chat_quick_protein">Hvor mye protein trenger jeg?</string>
+    <string name="chat_quick_calories">Analyser kaloriene mine</string>
+    <string name="chat_ai_response_1">Godt spørsmål! Basert på kaloriinntaket ditt i dag ville et proteinrikt middagsmåltid være ideelt. Prøv grillet kyllingbryst med quinoa og ovnsbakte grønnsaker — ca. 500 kcal og 40 g protein.</string>
+    <string name="chat_ai_response_2">Du gjør det bra! Du har spist 1 420 kcal av 2 000 kcal-målet ditt. Du har 580 kcal igjen og har forbrent 340 gjennom gåing. Fortsett slik!</string>
+    <string name="chat_ai_response_3">For i dag vil jeg foreslå en 30-minutters moderat gåtur — du har allerede gått 7 240 skritt og er nær 10 000-målet ditt. Eller prøv en 20-minutters yogaøkt for å slappe av.</string>
+    <string name="chat_ai_response_4">Basert på vekten og aktivitetsnivået ditt trenger du omtrent 130–150 g protein daglig. Gode kilder inkluderer kylling, egg, gresk yoghurt og belgfrukter.</string>
+    <string name="chat_ai_response_5">Makroene dine ser balanserte ut i dag. Protein er på 61 %, karbohydrater 72 % og fett 68 % av målene dine. Protein kan gjerne økes litt — legg til en snack som cottage cheese eller en proteinshake.</string>
+
+    <!-- Weight Tracker -->
+    <string name="weight_tracker_title">Vektsporing</string>
+    <string name="weight_log_cd">Logg vekt</string>
+    <string name="weight_current">Nåværende</string>
+    <string name="weight_this_week">−1,6 kg denne uken</string>
+    <string name="weight_to_goal">til mål</string>
+    <string name="weight_7day_trend">7-dagers trend</string>
+    <string name="weight_section_history">Historikk</string>
+    <string name="weight_latest">Siste</string>
+    <string name="weight_goal_settings">Målinnstillinger</string>
+    <string name="weight_start">Start</string>
+    <string name="weight_goal">Mål</string>
+    <string name="weight_remaining">Gjenstår</string>
+    <string name="weight_dialog_title">Logg dagens vekt</string>
+    <string name="weight_dialog_label">Vekt (kg)</string>
+    <string name="weight_goals_title">Vektmål</string>
+    <string name="weight_goals_current">Nåværende vekt</string>
+    <string name="weight_goals_goal">Målvekt</string>
+    <string name="weight_goals_progress">Fremgang</string>
+    <string name="weight_goals_progress_section">Vektutvikling</string>
+    <string name="weight_goals_chart_placeholder">Detaljerte vektdiagrammer kommer snart.</string>
+    <string name="weight_goals_update_button">Oppdater vekt</string>
+    <string name="weight_goals_snackbar">Vektlogging kommer snart</string>
+
+    <!-- Walking Tracker -->
+    <string name="walking_tracker_title">Gåsporing</string>
+    <string name="walking_todays_steps">Dagens skritt</string>
+    <string name="walking_start_tracking">Start sporing</string>
+    <string name="walking_pause_tracking">Pause sporing</string>
+    <string name="walking_stat_distance">Avstand</string>
+    <string name="walking_stat_calories">Kalorier</string>
+    <string name="walking_stat_duration">Varighet</string>
+    <string name="walking_section_this_week">Denne uken</string>
+    <string name="walking_weekly_overview">Ukeoversikt</string>
+    <string name="walking_legend_goal_reached">Mål nådd</string>
+    <string name="walking_legend_below_goal">Under mål</string>
+    <string name="walking_legend_today">I dag</string>
+    <string name="walking_achievements_title">Prestasjoner</string>
+    <string name="walking_ach_first_10k_title">Første 10 000 skritt</string>
+    <string name="walking_ach_first_10k_sub">Fullført 20. jun.</string>
+    <string name="walking_ach_streak_title">3-dagers rekke</string>
+    <string name="walking_ach_streak_sub">Fortsett slik!</string>
+    <string name="walking_ach_speed_title">Rask gåer</string>
+    <string name="walking_ach_speed_sub">Gjennomsnitt 5,4 km/t</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Profil</string>
+    <string name="profile_section_account">Konto</string>
+    <string name="profile_section_app">App</string>
+    <string name="profile_item_personal_info">Personlig info</string>
+    <string name="profile_item_personal_info_sub">Navn, alder, høyde, vekt</string>
+    <string name="profile_item_goals">Mål</string>
+    <string name="profile_item_goals_sub">Vekt, kalorier, skritt</string>
+    <string name="profile_item_notifications">Varsler</string>
+    <string name="profile_item_notifications_sub">Påminnelser og varsler</string>
+    <string name="profile_item_premium">Premium</string>
+    <string name="profile_item_premium_sub">Oppgrader for full tilgang</string>
+    <string name="profile_item_settings">Innstillinger</string>
+    <string name="profile_item_settings_sub">App-preferanser og enheter</string>
+    <string name="profile_item_privacy">Personvern</string>
+    <string name="profile_item_privacy_sub">Data og tillatelser</string>
+    <string name="profile_item_help">Hjelp og støtte</string>
+    <string name="profile_item_help_sub">Vanlige spørsmål, kontakt oss</string>
+    <string name="profile_item_about">Om Nova</string>
+    <string name="profile_item_about_sub">Versjon 1.0.0</string>
+    <string name="profile_stat_days_active">Aktive dager</string>
+    <string name="profile_stat_streak">Rekke</string>
+    <string name="profile_stat_lost">Tapt</string>
+    <string name="profile_stat_days">dager</string>
+    <string name="profile_signout_dialog_title">Logg ut</string>
+    <string name="profile_signout_dialog_message">Er du sikker på at du vil logge ut? Dataene dine er lagret på kontoen din.</string>
+
+    <!-- Subscription Screen -->
+    <string name="subscription_title">Nova Premium</string>
+    <string name="subscription_hero_headline">Lås opp ditt fulle potensial</string>
+    <string name="subscription_hero_body">Få den komplette Nova AI-opplevelsen med ubegrensede funksjoner, dypere innsikt og din personlige AI-helsecoach.</string>
+    <string name="subscription_plan_monthly">Månedlig</string>
+    <string name="subscription_plan_annual">Årlig</string>
+    <string name="subscription_plan_lifetime">Livstid</string>
+    <string name="subscription_period_month">/måned</string>
+    <string name="subscription_period_year">/år</string>
+    <string name="subscription_period_onetime">engangsbetaling</string>
+    <string name="subscription_badge_save50">Spar 50 %</string>
+    <string name="subscription_badge_best_value">Best verdi</string>
+    <string name="subscription_price_monthly_pm">$9,99/mnd</string>
+    <string name="subscription_price_annual_pm">$5,00/mnd</string>
+    <string name="subscription_price_lifetime_pm">Betal én gang</string>
+    <string name="subscription_cta">Start gratis prøveperiode · 7 dager gratis</string>
+    <string name="subscription_cancel_note">Avbryt når som helst · Ingen forpliktelse</string>
+    <string name="subscription_section_features">Alt i Premium</string>
+    <string name="subscription_feature_scan_title">AI-matkameraskanning</string>
+    <string name="subscription_feature_scan_sub">Umiddelbar kalorideteksjon fra bilder</string>
+    <string name="subscription_feature_coach_title">Avansert AI-coach</string>
+    <string name="subscription_feature_coach_sub">Ubegrensede Nova AI-samtaler</string>
+    <string name="subscription_feature_analytics_title">Dybdeanalyse</string>
+    <string name="subscription_feature_analytics_sub">Detaljerte trender og innsikt</string>
+    <string name="subscription_feature_meals_title">Måltidsplanlegging</string>
+    <string name="subscription_feature_meals_sub">Personlige ukentlige måltidsplaner</string>
+    <string name="subscription_feature_streaks_title">Rekkebelønninger</string>
+    <string name="subscription_feature_streaks_sub">Merker, belønninger og utfordringer</string>
+    <string name="subscription_feature_sync_title">Synkronisering på tvers av enheter</string>
+    <string name="subscription_feature_sync_sub">Tilgang fra alle enheter</string>
+    <string name="subscription_terms">Vilkår</string>
+    <string name="subscription_privacy">Personvern</string>
+    <string name="subscription_restore">Gjenopprett</string>
+    <string name="subscription_snackbar_trial">🎉 Gratis prøveperiode kommer snart — følg med!</string>
+    <string name="subscription_snackbar_terms">Tjenestevilkår — kommer snart</string>
+    <string name="subscription_snackbar_privacy_policy">Personvernerklæring — kommer snart</string>
+    <string name="subscription_snackbar_restore">Gjenopprett kjøp — kommer snart</string>
+
+    <!-- Scan Food Screen -->
+    <string name="scan_food_title">Skann Mat</string>
+    <string name="scan_food_body">Ta eller last opp et bilde av maten din, så anslår Nova AI kalorier, protein, karbohydrater og fett.</string>
+    <string name="scan_food_take_photo">Ta Bilde</string>
+    <string name="scan_food_upload_gallery">Last opp fra Galleri</string>
+    <string name="scan_food_helper">AI-matgjenkjenning legges til i neste versjon.</string>
+    <string name="scan_food_snackbar_camera">Kameraskanning kommer snart</string>
+    <string name="scan_food_snackbar_gallery">Galleriopplasting kommer snart</string>
+
+    <!-- Placeholder screens -->
+    <string name="placeholder_calorie_tracker_title">Kaloriteller</string>
+    <string name="placeholder_calorie_tracker_sub">Logg hvert måltid, snack og drikke. Søk i millioner av matvarer eller skann strekkoder for øyeblikkelige næringsanalyser og makrosporing.</string>
+    <string name="placeholder_meal_suggestions_title">Måltidsforslag</string>
+    <string name="placeholder_meal_suggestions_sub">Få personlige måltidsideer fra Nova AI basert på kaloribudsjettet, makromålene, kostholdsønskene dine og hva du allerede har i kjøleskapet.</string>
+    <string name="placeholder_food_scan_title">AI-matkameraskanning</string>
+    <string name="placeholder_food_scan_sub">Pek kameraet mot et hvilket som helst måltid, og Nova AI vil umiddelbart identifisere ingredienser, estimere porsjoner og logge kaloriene — uten manuell registrering.</string>
+    <string name="placeholder_streaks_title">Daglige rekker</string>
+    <string name="placeholder_streaks_sub">Bygg gode vaner med daglige rekker. Logg måltider, nå skrittmålene dine og vær konsekvent for å låse opp merker og tjene belønninger.</string>
+    <string name="streaks_current_streak">Nåværende rekke</string>
+    <string name="streaks_best_streak">Beste rekke</string>
+    <string name="streaks_days_unit">Dager</string>
+    <string name="streaks_weekly_progress">Ukentlig fremgang</string>
+    <string name="streaks_day_mon">Man</string>
+    <string name="streaks_day_tue">Tir</string>
+    <string name="streaks_day_wed">Ons</string>
+    <string name="streaks_day_thu">Tor</string>
+    <string name="streaks_day_fri">Fre</string>
+    <string name="streaks_day_sat">Lør</string>
+    <string name="streaks_day_sun">Søn</string>
+    <string name="streaks_motivation_title">Hold rekken din i live</string>
+    <string name="streaks_motivation_text">Fullfør minst én sunn vane i dag for å fortsette rekken din.</string>
+    <string name="streaks_complete_button">Fullfør dagens mål</string>
+    <string name="streaks_snackbar">Daglige rekker blir interaktive i neste versjon.</string>
+    <string name="placeholder_personal_info_title">Personlig info</string>
+    <string name="placeholder_personal_info_sub">Rediger navn, alder, høyde, vekt og andre personlige opplysninger for å tilpasse Nova AI-opplevelsen din.</string>
+    <string name="placeholder_goals_title">Mål</string>
+    <string name="placeholder_goals_sub">Sett og administrer vektmålet, det daglige kaloribudsjettet, skrittmålet og makrofordelingen for å holde Nova AI-coachingen din på rett spor.</string>
+    <string name="placeholder_notifications_title">Varsler</string>
+    <string name="placeholder_notifications_sub">Tilpass måltidspåminnelser, varsler for skrittmål, veie-inn-meldinger og daglige motivasjonsmeldinger fra Nova AI.</string>
+    <string name="placeholder_privacy_title">Personvern</string>
+    <string name="placeholder_privacy_sub">Kontroller datatillatelsene dine, administrer hva Nova AI lærer om deg, og gjennomgå vår datapraksis og personvernerklæring.</string>
+    <string name="placeholder_help_title">Hjelp og støtte</string>
+    <string name="placeholder_help_sub">Bla gjennom vanlige spørsmål, se opplæringsvideoer eller kontakt supportteamet vårt. Vi er her for å hjelpe deg å få mest mulig ut av Nova AI.</string>
+    <string name="placeholder_about_title">Om Nova</string>
+    <string name="placeholder_about_sub">Nova AI – Kaloriteller  ·  Versjon 1.0.0\n\nLaget med ❤️ for å hjelpe deg å nå helsemålene dine. Nova AI bruker avansert maskinlæring for å coache deg hvert steg på veien.</string>
+    <string name="placeholder_settings_title">Innstillinger</string>
+    <string name="placeholder_settings_sub">Administrer app-preferanser, måleenheter, tema, språk og tilkoblede helsetjenester som Google Fit eller Apple Health.</string>
+    <string name="placeholder_water_title">Vannsporing</string>
+    <string name="placeholder_water_sub">Logg hvert glass og hold oversikt over det daglige hydrerings­målet ditt. Nova AI vil minne deg på å drikke mer vann når du henger etter.</string>
+    <string name="placeholder_sleep_title">Søvnsporing</string>
+    <string name="placeholder_sleep_sub">Spor søvnlengde og -kvalitet. God søvn er avgjørende for vekttap — Nova AI tar hensyn til hvilen din i den daglige helsecoachingen.</string>
+</resources>

@@ -1,0 +1,3 @@
+-keep class com.novaai.calorietracker.** { *; }
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
