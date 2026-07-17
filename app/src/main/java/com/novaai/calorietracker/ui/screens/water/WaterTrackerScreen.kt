@@ -29,20 +29,32 @@ private val WaterBlue = Color(0xFF40CFFF)
 private const val GOAL_ML = 2500
 private const val PREFS_NAME = "water_tracker"
 private const val KEY_INTAKE_ML = "intake_ml"
-private const val KEY_LAST_ADDED = "last_added_ml"
+private const val KEY_ADD_HISTORY = "add_history"
 
 @Composable
 fun WaterTrackerScreen(navController: NavController) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
     var intakeMl by remember { mutableIntStateOf(prefs.getInt(KEY_INTAKE_ML, 1800)) }
-    var lastAdded by remember { mutableIntStateOf(prefs.getInt(KEY_LAST_ADDED, 0)) }
+    var addHistory by remember {
+        mutableStateOf(
+            prefs.getString(KEY_ADD_HISTORY, "").orEmpty()
+                .split(",")
+                .mapNotNull { it.toIntOrNull() }
+        )
+    }
 
     fun persist() {
         prefs.edit()
             .putInt(KEY_INTAKE_ML, intakeMl)
-            .putInt(KEY_LAST_ADDED, lastAdded)
+            .putString(KEY_ADD_HISTORY, addHistory.joinToString(","))
             .apply()
+    }
+
+    fun addWater(amountMl: Int) {
+        intakeMl += amountMl
+        addHistory = addHistory + amountMl
+        persist()
     }
 
     val liters = intakeMl / 1000f
@@ -121,11 +133,7 @@ fun WaterTrackerScreen(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
-                onClick = {
-                    intakeMl += 250
-                    lastAdded = 250
-                    persist()
-                },
+                onClick = { addWater(250) },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = WaterBlue.copy(alpha = 0.15f),
@@ -138,11 +146,7 @@ fun WaterTrackerScreen(navController: NavController) {
                 Text(stringResource(R.string.water_add_glass), fontWeight = FontWeight.Bold)
             }
             Button(
-                onClick = {
-                    intakeMl += 500
-                    lastAdded = 500
-                    persist()
-                },
+                onClick = { addWater(500) },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = WaterBlue,
@@ -160,13 +164,13 @@ fun WaterTrackerScreen(navController: NavController) {
 
         OutlinedButton(
             onClick = {
-                if (lastAdded > 0) {
-                    intakeMl = (intakeMl - lastAdded).coerceAtLeast(0)
-                    lastAdded = 0
+                addHistory.lastOrNull()?.let { last ->
+                    intakeMl = (intakeMl - last).coerceAtLeast(0)
+                    addHistory = addHistory.dropLast(1)
                     persist()
                 }
             },
-            enabled = lastAdded > 0,
+            enabled = addHistory.isNotEmpty(),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = WhiteAlpha60),
             border = BorderStroke(1.dp, NavyBorder),
