@@ -1,5 +1,8 @@
 package com.novaai.calorietracker.ui.screens.foodscan
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,10 +34,16 @@ fun FoodScanScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
 
     val cameraComingSoon = stringResource(R.string.scan_food_snackbar_camera)
-    val galleryComingSoon = stringResource(R.string.scan_food_snackbar_gallery)
+    val photoSelected = stringResource(R.string.scan_food_snackbar_photo_selected)
 
     fun showMessage(msg: String) {
         scope.launch { snackbarHostState.showSnackbar(msg) }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) showMessage(photoSelected)
     }
 
     Scaffold(
@@ -91,7 +100,11 @@ fun FoodScanScreen(navController: NavController) {
                 Spacer(Modifier.height(12.dp))
 
                 OutlinedButton(
-                    onClick = { showMessage(galleryComingSoon) },
+                    onClick = {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = White),
                     border = BorderStroke(1.dp, NavyBorder),
