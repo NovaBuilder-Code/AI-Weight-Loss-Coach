@@ -217,6 +217,8 @@
     <string name="scan_food_snackbar_gallery">Gallery upload coming soon</string>
     <string name="scan_food_snackbar_photo_selected">Photo selected</string>
     <string name="scan_food_snackbar_photo_captured">Photo captured</string>
+    <string name="scan_food_choose_another">Choose another photo</string>
+    <string name="scan_food_preview_description">Selected food photo</string>
 
     <!-- Placeholder screens -->
     <string name="placeholder_calorie_tracker_title">Calorie Tracker</string>
