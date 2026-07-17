@@ -1,5 +1,6 @@
 package com.novaai.calorietracker.ui.screens.water
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,11 +27,23 @@ import com.novaai.calorietracker.ui.theme.*
 
 private val WaterBlue = Color(0xFF40CFFF)
 private const val GOAL_ML = 2500
+private const val PREFS_NAME = "water_tracker"
+private const val KEY_INTAKE_ML = "intake_ml"
+private const val KEY_LAST_ADDED = "last_added_ml"
 
 @Composable
 fun WaterTrackerScreen(navController: NavController) {
-    var intakeMl by remember { mutableIntStateOf(1800) }
-    var lastAdded by remember { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+    var intakeMl by remember { mutableIntStateOf(prefs.getInt(KEY_INTAKE_ML, 1800)) }
+    var lastAdded by remember { mutableIntStateOf(prefs.getInt(KEY_LAST_ADDED, 0)) }
+
+    fun persist() {
+        prefs.edit()
+            .putInt(KEY_INTAKE_ML, intakeMl)
+            .putInt(KEY_LAST_ADDED, lastAdded)
+            .apply()
+    }
 
     val liters = intakeMl / 1000f
     val progress = (intakeMl.toFloat() / GOAL_ML).coerceIn(0f, 1f)
@@ -110,6 +124,7 @@ fun WaterTrackerScreen(navController: NavController) {
                 onClick = {
                     intakeMl += 250
                     lastAdded = 250
+                    persist()
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -126,6 +141,7 @@ fun WaterTrackerScreen(navController: NavController) {
                 onClick = {
                     intakeMl += 500
                     lastAdded = 500
+                    persist()
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -147,6 +163,7 @@ fun WaterTrackerScreen(navController: NavController) {
                 if (lastAdded > 0) {
                     intakeMl = (intakeMl - lastAdded).coerceAtLeast(0)
                     lastAdded = 0
+                    persist()
                 }
             },
             enabled = lastAdded > 0,
