@@ -1,8 +1,11 @@
 package com.novaai.calorietracker.ui.screens.water
 
 import android.content.Context
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -132,11 +136,18 @@ fun WaterTrackerScreen(navController: NavController) {
                 .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            val glassInteraction = remember { MutableInteractionSource() }
+            val glassPressed by glassInteraction.collectIsPressedAsState()
+            val glassContainer by animateColorAsState(
+                targetValue = WaterBlue.copy(alpha = if (glassPressed) 0.55f else 0.15f),
+                label = "glassPressFeedback"
+            )
             Button(
                 onClick = { addWater(250) },
+                interactionSource = glassInteraction,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = WaterBlue.copy(alpha = 0.15f),
+                    containerColor = glassContainer,
                     contentColor = WaterBlue
                 ),
                 modifier = Modifier
@@ -145,11 +156,18 @@ fun WaterTrackerScreen(navController: NavController) {
             ) {
                 Text(stringResource(R.string.water_add_glass), fontWeight = FontWeight.Bold)
             }
+            val bottleInteraction = remember { MutableInteractionSource() }
+            val bottlePressed by bottleInteraction.collectIsPressedAsState()
+            val bottleContainer by animateColorAsState(
+                targetValue = if (bottlePressed) lerp(WaterBlue, White, 0.45f) else WaterBlue,
+                label = "bottlePressFeedback"
+            )
             Button(
                 onClick = { addWater(500) },
+                interactionSource = bottleInteraction,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = WaterBlue,
+                    containerColor = bottleContainer,
                     contentColor = NavyDeep
                 ),
                 modifier = Modifier
