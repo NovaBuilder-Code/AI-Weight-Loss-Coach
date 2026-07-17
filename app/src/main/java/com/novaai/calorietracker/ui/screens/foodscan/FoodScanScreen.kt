@@ -1,5 +1,6 @@
 package com.novaai.calorietracker.ui.screens.foodscan
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,29 +13,34 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.ui.components.NovaAvatar
 import com.novaai.calorietracker.ui.components.NovaTopBar
 import com.novaai.calorietracker.ui.theme.*
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun FoodScanScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val cameraComingSoon = stringResource(R.string.scan_food_snackbar_camera)
+    val context = LocalContext.current
     val photoSelected = stringResource(R.string.scan_food_snackbar_photo_selected)
+    val photoCaptured = stringResource(R.string.scan_food_snackbar_photo_captured)
 
     fun showMessage(msg: String) {
         scope.launch { snackbarHostState.showSnackbar(msg) }
@@ -44,6 +50,25 @@ fun FoodScanScreen(navController: NavController) {
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) showMessage(photoSelected)
+    }
+
+    val cameraUri = remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) showMessage(photoCaptured)
+    }
+
+    fun launchCamera() {
+        val cameraDir = File(context.cacheDir, "camera").apply { mkdirs() }
+        val photoFile = File.createTempFile("food_", ".jpg", cameraDir)
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            photoFile
+        )
+        cameraUri.value = uri
+        cameraLauncher.launch(uri)
     }
 
     Scaffold(
@@ -82,7 +107,7 @@ fun FoodScanScreen(navController: NavController) {
                 Spacer(Modifier.height(32.dp))
 
                 Button(
-                    onClick = { showMessage(cameraComingSoon) },
+                    onClick = { launchCamera() },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = GreenPrimary,
