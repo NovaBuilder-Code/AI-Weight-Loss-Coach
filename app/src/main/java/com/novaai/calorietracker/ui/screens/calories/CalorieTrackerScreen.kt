@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -101,8 +102,17 @@ fun CalorieTrackerScreen(navController: NavController) {
         }
         item { Spacer(Modifier.height(12.dp)) }
         items(meals.size) { i ->
-            val meal = meals[meals.size - 1 - i]
-            MealRow(name = meal.name, type = meal.type, kcal = meal.kcal)
+            val index = meals.size - 1 - i
+            val meal = meals[index]
+            MealRow(
+                name = meal.name,
+                type = meal.type,
+                kcal = meal.kcal,
+                onDelete = {
+                    meals.removeAt(index)
+                    saveMeals(prefs, meals)
+                }
+            )
         }
     }
 
@@ -186,7 +196,7 @@ private fun CalorieSummary(consumed: Int) {
 }
 
 @Composable
-private fun MealRow(name: String, type: String, kcal: Int) {
+private fun MealRow(name: String, type: String, kcal: Int, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,6 +230,14 @@ private fun MealRow(name: String, type: String, kcal: Int) {
             style = MaterialTheme.typography.titleMedium,
             color = GreenPrimary
         )
+        IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.calorie_delete_meal_cd),
+                tint = WhiteAlpha60,
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }
 
