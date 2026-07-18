@@ -69,7 +69,16 @@ fun CalorieTrackerScreen(navController: NavController) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
-    val meals = remember { mutableStateListOf<MealEntry>().apply { addAll(loadMeals(prefs, typeSnack)) } }
+    val meals = remember {
+        mutableStateListOf<MealEntry>().apply {
+            val today = LocalDate.now().toString()
+            val saved = loadMeals(prefs, typeSnack)
+            val todays = saved.filter { it.date == today }
+            addAll(todays)
+            // A new calendar day: drop the previous day's meals from storage.
+            if (todays.size != saved.size) saveMeals(prefs, todays)
+        }
+    }
 
     var showAddDialog by remember { mutableStateOf(false) }
     val consumed = meals.sumOf { it.kcal }
