@@ -1,6 +1,5 @@
 package com.novaai.calorietracker.ui.screens.water
 
-import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -26,51 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.WaterStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
-import java.time.LocalDate
 
 private val WaterBlue = Color(0xFF40CFFF)
 private const val GOAL_ML = 2500
-private const val PREFS_NAME = "water_tracker"
-private const val KEY_INTAKE_ML = "intake_ml"
-private const val KEY_ADD_HISTORY = "add_history"
-private const val KEY_INTAKE_DATE = "intake_date"
 
 @Composable
 fun WaterTrackerScreen(navController: NavController) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
-    remember {
-        val today = LocalDate.now()
-        val savedDate = prefs.getString(KEY_INTAKE_DATE, null)
-            ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        if (savedDate == null || savedDate.isBefore(today)) {
-            val editor = prefs.edit()
-            if (savedDate != null) {
-                // A previous day's total: start the new day at zero.
-                editor.putInt(KEY_INTAKE_ML, 0)
-                editor.putString(KEY_ADD_HISTORY, "")
-            }
-            editor.putString(KEY_INTAKE_DATE, today.toString())
-            editor.apply()
-        }
-    }
-    var intakeMl by remember { mutableIntStateOf(prefs.getInt(KEY_INTAKE_ML, 1800)) }
-    var addHistory by remember {
-        mutableStateOf(
-            prefs.getString(KEY_ADD_HISTORY, "").orEmpty()
-                .split(",")
-                .mapNotNull { it.toIntOrNull() }
-        )
-    }
+    val initial = remember { WaterStore.loadToday(context) }
+    var intakeMl by remember { mutableIntStateOf(initial.intakeMl) }
+    var addHistory by remember { mutableStateOf(initial.history) }
 
-    fun persist() {
-        prefs.edit()
-            .putInt(KEY_INTAKE_ML, intakeMl)
-            .putString(KEY_ADD_HISTORY, addHistory.joinToString(","))
-            .apply()
-    }
+    fun persist() = WaterStore.save(context, intakeMl, addHistory)
 
     fun addWater(amountMl: Int) {
         intakeMl += amountMl
