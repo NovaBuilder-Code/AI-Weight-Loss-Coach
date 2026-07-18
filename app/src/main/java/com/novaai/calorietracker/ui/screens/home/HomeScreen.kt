@@ -17,12 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.CalorieStore
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
@@ -114,9 +116,10 @@ private fun HomeHeader(navController: NavController) {
 
 @Composable
 private fun CalorieSummaryCard(navController: NavController) {
-    val consumed = 1420
+    val context = LocalContext.current
+    val consumed = remember { CalorieStore.loadTodayMeals(context).sumOf { it.kcal } }
     val goal = 2000
-    val progress = consumed.toFloat() / goal
+    val progress = (consumed.toFloat() / goal).coerceIn(0f, 1f)
 
     NovaGlowCard(
         modifier = Modifier

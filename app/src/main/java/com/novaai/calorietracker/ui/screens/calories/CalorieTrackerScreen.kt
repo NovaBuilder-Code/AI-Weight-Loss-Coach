@@ -1,7 +1,5 @@
 package com.novaai.calorietracker.ui.screens.calories
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,60 +23,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.CalorieStore
+import com.novaai.calorietracker.data.StoredMeal
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.time.LocalDate
 
 private data class MealEntry(val name: String, val type: String, val kcal: Int, val date: String)
 
 private const val DAILY_GOAL = 2000
 private const val BURNED = 340
-private const val PREFS_NAME = "calorie_tracker"
-private const val KEY_MEALS = "meals"
-
-private fun loadMeals(prefs: SharedPreferences, type: String): List<MealEntry> =
-    runCatching {
-        val array = JSONArray(prefs.getString(KEY_MEALS, "[]").orEmpty())
-        (0 until array.length()).mapNotNull { i ->
-            val obj = array.optJSONObject(i) ?: return@mapNotNull null
-            val name = obj.optString("name")
-            val kcal = obj.optInt("kcal", -1)
-            if (name.isBlank() || kcal < 0) null
-            else MealEntry(name, type, kcal, obj.optString("date"))
-        }
-    }.getOrDefault(emptyList())
-
-private fun saveMeals(prefs: SharedPreferences, meals: List<MealEntry>) {
-    val array = JSONArray()
-    meals.forEach { meal ->
-        array.put(
-            JSONObject()
-                .put("name", meal.name)
-                .put("kcal", meal.kcal)
-                .put("date", meal.date)
-        )
-    }
-    prefs.edit().putString(KEY_MEALS, array.toString()).apply()
-}
 
 @Composable
 fun CalorieTrackerScreen(navController: NavController) {
     val typeSnack = stringResource(R.string.calorie_type_snack)
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
     val meals = remember {
         mutableStateListOf<MealEntry>().apply {
-            val today = LocalDate.now().toString()
-            val saved = loadMeals(prefs, typeSnack)
-            val todays = saved.filter { it.date == today }
-            addAll(todays)
-            // A new calendar day: drop the previous day's meals from storage.
-            if (todays.size != saved.size) saveMeals(prefs, todays)
+            addAll(CalorieStore.loadTodayMeals(context).map { MealEntry(it.name, typeSnack, it.kcal, it.date) })
         }
     }
+
+    fun persist() = CalorieStore.saveMeals(context, meals.map { StoredMeal(it.name, it.kcal, it.date) })
 
     var showAddDialog by remember { mutableStateOf(false) }
     val consumed = meals.sumOf { it.kcal }
@@ -119,7 +86,7 @@ fun CalorieTrackerScreen(navController: NavController) {
                 kcal = meal.kcal,
                 onDelete = {
                     meals.removeAt(index)
-                    saveMeals(prefs, meals)
+                    persist()
                 }
             )
         }
@@ -130,7 +97,7 @@ fun CalorieTrackerScreen(navController: NavController) {
             onDismiss = { showAddDialog = false },
             onAdd = { name, kcal ->
                 meals.add(MealEntry(name, typeSnack, kcal, LocalDate.now().toString()))
-                saveMeals(prefs, meals)
+                persist()
                 showAddDialog = false
             }
         )
