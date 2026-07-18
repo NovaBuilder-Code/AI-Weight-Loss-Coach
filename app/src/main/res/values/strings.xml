@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Nova AI</string>
 
@@ -39,7 +39,7 @@
 
     <!-- Home Screen -->
     <string name="home_greeting">Good morning,</string>
-    <string name="home_user_name">Alex ðŸ‘‹</string>
+    <string name="home_user_name">Alex 👋</string>
     <string name="home_section_todays_stats">Today\'s Stats</string>
     <string name="home_section_quick_actions">Quick Actions</string>
     <string name="home_section_macro_breakdown">Macro Breakdown</string>
@@ -70,30 +70,30 @@
     <string name="home_streaks_sub">Keep your momentum going</string>
 
     <!-- Chat Screen -->
-    <string name="chat_status">Online Â· Your health coach</string>
-    <string name="chat_input_hint">Ask Nova anythingâ€¦</string>
+    <string name="chat_status">Online · Your health coach</string>
+    <string name="chat_input_hint">Ask Nova anything…</string>
     <string name="chat_options_cd">Options</string>
     <string name="chat_menu_settings">Settings</string>
     <string name="chat_menu_profile">Profile</string>
     <string name="chat_menu_clear">Clear Chat</string>
     <string name="chat_send_cd">Send</string>
-    <string name="chat_initial_message">Hi! I\'m Nova, your personal AI health coach. I\'m here to help you reach your goals â€” nutrition, fitness, weight, and more. What can I help you with today?</string>
+    <string name="chat_initial_message">Hi! I\'m Nova, your personal AI health coach. I\'m here to help you reach your goals — nutrition, fitness, weight, and more. What can I help you with today?</string>
     <string name="chat_quick_dinner">What should I eat for dinner?</string>
     <string name="chat_quick_on_track">Am I on track today?</string>
     <string name="chat_quick_workout">Suggest a workout</string>
     <string name="chat_quick_protein">How much protein do I need?</string>
     <string name="chat_quick_calories">Analyze my calories</string>
-    <string name="chat_ai_response_1">Great question! Based on your calorie data today, a high-protein dinner would be ideal. Try grilled chicken breast with quinoa and roasted vegetables â€” around 500 kcal and 40g of protein.</string>
+    <string name="chat_ai_response_1">Great question! Based on your calorie data today, a high-protein dinner would be ideal. Try grilled chicken breast with quinoa and roasted vegetables — around 500 kcal and 40g of protein.</string>
     <string name="chat_ai_response_2">You\'re doing well! You\'ve consumed 1,420 kcal of your 2,000 kcal goal. You have 580 kcal remaining and you\'ve burned 340 through walking. Keep it up!</string>
-    <string name="chat_ai_response_3">For today, I\'d suggest a 30-minute moderate walk â€” you\'ve already done 7,240 steps, so you\'re close to your 10,000 goal. Or try a 20-minute yoga session to wind down.</string>
-    <string name="chat_ai_response_4">Based on your weight and activity level, you need approximately 130â€“150g of protein daily. Great sources include chicken, eggs, Greek yogurt, and legumes.</string>
-    <string name="chat_ai_response_5">Your macros look balanced today. Protein is at 61%, carbs at 72%, and fat at 68% of your goals. Protein could use a small boost â€” add a snack like cottage cheese or a protein shake.</string>
+    <string name="chat_ai_response_3">For today, I\'d suggest a 30-minute moderate walk — you\'ve already done 7,240 steps, so you\'re close to your 10,000 goal. Or try a 20-minute yoga session to wind down.</string>
+    <string name="chat_ai_response_4">Based on your weight and activity level, you need approximately 130–150g of protein daily. Great sources include chicken, eggs, Greek yogurt, and legumes.</string>
+    <string name="chat_ai_response_5">Your macros look balanced today. Protein is at 61%, carbs at 72%, and fat at 68% of your goals. Protein could use a small boost — add a snack like cottage cheese or a protein shake.</string>
 
     <!-- Weight Tracker -->
     <string name="weight_tracker_title">Weight Tracker</string>
     <string name="weight_log_cd">Log weight</string>
     <string name="weight_current">Current</string>
-    <string name="weight_this_week">âˆ’1.6 kg this week</string>
+    <string name="weight_this_week">−1.6 kg this week</string>
     <string name="weight_to_goal">to goal</string>
     <string name="weight_7day_trend">7-Day Trend</string>
     <string name="weight_section_history">History</string>
@@ -178,8 +178,8 @@
     <string name="subscription_price_monthly_pm">$9.99/mo</string>
     <string name="subscription_price_annual_pm">$5.00/mo</string>
     <string name="subscription_price_lifetime_pm">Pay once</string>
-    <string name="subscription_cta">Start Free Trial Â· 7 Days Free</string>
-    <string name="subscription_cancel_note">Cancel anytime Â· No commitment</string>
+    <string name="subscription_cta">Start Free Trial · 7 Days Free</string>
+    <string name="subscription_cancel_note">Cancel anytime · No commitment</string>
     <string name="subscription_section_features">Everything in Premium</string>
     <string name="subscription_feature_scan_title">AI Food Photo Scan</string>
     <string name="subscription_feature_scan_sub">Instant calorie detection from photos</string>
@@ -196,15 +196,15 @@
     <string name="subscription_terms">Terms</string>
     <string name="subscription_privacy">Privacy</string>
     <string name="subscription_restore">Restore</string>
-    <string name="subscription_snackbar_trial">ðŸŽ‰ Free trial coming soon â€” stay tuned!</string>
-    <string name="subscription_snackbar_terms">Terms of Service â€” coming soon</string>
-    <string name="subscription_snackbar_privacy_policy">Privacy Policy â€” coming soon</string>
-    <string name="subscription_snackbar_restore">Restore Purchases â€” coming soon</string>
+    <string name="subscription_snackbar_trial">🎉 Free trial coming soon — stay tuned!</string>
+    <string name="subscription_snackbar_terms">Terms of Service — coming soon</string>
+    <string name="subscription_snackbar_privacy_policy">Privacy Policy — coming soon</string>
+    <string name="subscription_snackbar_restore">Restore Purchases — coming soon</string>
 
     <!-- AI Coach Screen -->
     <string name="ai_coach_title">AI Coach</string>
     <string name="ai_coach_welcome_message">Hi! I\'m Nova, your personal AI health coach. Ask me anything about nutrition, weight loss, fitness, sleep, or healthy habits.</string>
-    <string name="ai_coach_input_hint">Ask Nova anythingâ€¦</string>
+    <string name="ai_coach_input_hint">Ask Nova anything…</string>
     <string name="ai_coach_snackbar_coming_soon">AI chat coming soon</string>
 
     <!-- Scan Food Screen -->
@@ -226,7 +226,7 @@
     <string name="placeholder_meal_suggestions_title">Meal Suggestions</string>
     <string name="placeholder_meal_suggestions_sub">Get personalized meal ideas from Nova AI based on your calorie budget, macro targets, dietary preferences, and what\'s already in your fridge.</string>
     <string name="placeholder_food_scan_title">AI Food Photo Scan</string>
-    <string name="placeholder_food_scan_sub">Point your camera at any meal and Nova AI will instantly identify ingredients, estimate portions, and log your calories â€” no manual entry needed.</string>
+    <string name="placeholder_food_scan_sub">Point your camera at any meal and Nova AI will instantly identify ingredients, estimate portions, and log your calories — no manual entry needed.</string>
     <string name="placeholder_streaks_title">Daily Streaks</string>
     <string name="placeholder_streaks_sub">Build winning habits with daily streaks. Log your meals, hit your step goals, and stay consistent to unlock badges and earn rewards.</string>
 
@@ -257,17 +257,17 @@
     <string name="placeholder_help_title">Help &amp; Support</string>
     <string name="placeholder_help_sub">Browse FAQs, watch tutorial videos, or contact our support team. We\'re here to help you get the most out of Nova AI.</string>
     <string name="placeholder_about_title">About Nova</string>
-    <string name="placeholder_about_sub">Nova AI â€“ Calorie Tracker  Â·  Version 1.0.0\n\nBuilt with â¤ï¸ to help you reach your health goals. Nova AI uses advanced machine learning to coach you every step of the way.</string>
+    <string name="placeholder_about_sub">Nova AI – Calorie Tracker  ·  Version 1.0.0\n\nBuilt with ❤️ to help you reach your health goals. Nova AI uses advanced machine learning to coach you every step of the way.</string>
     <string name="placeholder_settings_title">Settings</string>
     <string name="placeholder_settings_sub">Manage app preferences, units of measurement, theme, language, and connected health services like Google Fit or Apple Health.</string>
     <string name="placeholder_water_title">Water Tracker</string>
     <string name="placeholder_water_sub">Log every glass and stay on top of your daily hydration goal. Nova AI will remind you to drink more water when you fall behind.</string>
     <string name="placeholder_sleep_title">Sleep Tracker</string>
-    <string name="placeholder_sleep_sub">Track your sleep duration and quality. Good sleep is essential for weight loss â€” Nova AI factors your rest into your daily health coaching.</string>
+    <string name="placeholder_sleep_sub">Track your sleep duration and quality. Good sleep is essential for weight loss — Nova AI factors your rest into your daily health coaching.</string>
 
     <!-- Daily Streaks (interactive) -->
-    <string name="streaks_completed_button">Completed Today âœ“</string>
-    <string name="streaks_completed_snackbar">ðŸ”¥ Goal completed â€” streak extended!</string>
+    <string name="streaks_completed_button">Completed Today ✓</string>
+    <string name="streaks_completed_snackbar">🔥 Goal completed — streak extended!</string>
 
     <!-- Calorie Tracker (MVP) -->
     <string name="calorie_section_meals">Today\'s Meals</string>
@@ -325,7 +325,7 @@
     <string name="sleep_bedtime">Bedtime</string>
     <string name="sleep_wakeup">Wake Up</string>
     <string name="sleep_tip_title">Nova\'s Sleep Tip</string>
-    <string name="sleep_tip_text">Consistent bedtimes help regulate your metabolism. Aim for 7â€“9 hours to support your weight goals.</string>
+    <string name="sleep_tip_text">Consistent bedtimes help regulate your metabolism. Aim for 7–9 hours to support your weight goals.</string>
 
     <!-- Water Tracker (MVP) -->
     <string name="water_today">Today\'s Intake</string>
@@ -333,9 +333,9 @@
     <string name="water_add_glass">+ Glass (250 ml)</string>
     <string name="water_add_bottle">+ Bottle (500 ml)</string>
     <string name="water_undo">Undo last</string>
-    <string name="water_goal_reached">ðŸŽ‰ Daily goal reached!</string>
+    <string name="water_goal_reached">🎉 Daily goal reached!</string>
     <string name="water_tip_title">Nova\'s Hydration Tip</string>
-    <string name="water_tip_text">Drink a glass of water before each meal â€” it supports digestion and helps control appetite.</string>
+    <string name="water_tip_text">Drink a glass of water before each meal — it supports digestion and helps control appetite.</string>
 
     <!-- Goals (MVP) -->
     <string name="goals_section">Daily Targets</string>
@@ -368,7 +368,7 @@
     <string name="pi_height">Height (cm)</string>
     <string name="pi_weight">Weight (kg)</string>
     <string name="pi_save">Save Changes</string>
-    <string name="pi_saved">Changes saved âœ“</string>
+    <string name="pi_saved">Changes saved ✓</string>
 
     <!-- Privacy (MVP) -->
     <string name="privacy_section_controls">Data Controls</string>
@@ -385,7 +385,7 @@
     <string name="help_faq1_q">How does Nova estimate my calories?</string>
     <string name="help_faq1_a">Nova combines your logged meals with your activity to estimate daily calories in and out.</string>
     <string name="help_faq2_q">Can I change my goals later?</string>
-    <string name="help_faq2_a">Yes â€” open Profile â†’ Goals and tap any target to adjust it at any time.</string>
+    <string name="help_faq2_a">Yes — open Profile → Goals and tap any target to adjust it at any time.</string>
     <string name="help_faq3_q">Does the app work offline?</string>
     <string name="help_faq3_a">Yes. All tracking works offline; AI features will need a connection when they arrive.</string>
     <string name="help_faq4_q">How do streaks work?</string>
@@ -398,6 +398,6 @@
     <!-- About (MVP) -->
     <string name="about_version_label">Version</string>
     <string name="about_version_value">1.0.0</string>
-    <string name="about_description">Nova AI is your personal health coach â€” calorie tracking, weight goals, walking, hydration, sleep and daily streaks, all guided by Nova.</string>
-    <string name="about_made">Built with â¤ï¸ for your health journey</string>
+    <string name="about_description">Nova AI is your personal health coach — calorie tracking, weight goals, walking, hydration, sleep and daily streaks, all guided by Nova.</string>
+    <string name="about_made">Built with ❤️ for your health journey</string>
 </resources>
