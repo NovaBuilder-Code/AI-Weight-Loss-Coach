@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.CalorieStore
 import com.novaai.calorietracker.data.WaterStore
+import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
@@ -193,9 +194,14 @@ private data class TodayStat(
 private fun TodayStatsRow(navController: NavController) {
     val context = LocalContext.current
     val waterLiters = remember { WaterStore.loadToday(context).intakeMl / 1000f }
+    val weightText = remember {
+        WeightStore.load(context)?.kg?.let { kg ->
+            if (kg % 1f == 0f) "%.0f".format(kg) else kg.toString()
+        } ?: "74.2"
+    }
     val todayStats = listOf(
         TodayStat(stringResource(R.string.home_stat_steps),  "7,240", stringResource(R.string.steps_unit), Icons.Default.DirectionsWalk, GreenPrimary, Screen.Walking.route),
-        TodayStat(stringResource(R.string.home_stat_weight), "74.2",  stringResource(R.string.kg),         Icons.Default.MonitorWeight,  InfoBlue,     Screen.Weight.route),
+        TodayStat(stringResource(R.string.home_stat_weight), weightText, stringResource(R.string.kg),      Icons.Default.MonitorWeight,  InfoBlue,     Screen.Weight.route),
         TodayStat(stringResource(R.string.home_stat_water),  "%.1f".format(waterLiters), stringResource(R.string.liters), Icons.Default.WaterDrop, Color(0xFF40CFFF), Screen.Water.route),
         TodayStat(stringResource(R.string.home_stat_sleep),  "7h 20m","",                                  Icons.Default.NightsStay,     Color(0xFF9B8FFF), Screen.Sleep.route)
     )
