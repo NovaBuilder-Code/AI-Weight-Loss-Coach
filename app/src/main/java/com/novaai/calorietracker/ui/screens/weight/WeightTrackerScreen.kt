@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
@@ -46,7 +48,19 @@ private val initialWeightHistory = listOf(
 @Composable
 fun WeightTrackerScreen(navController: NavController) {
     var showLogDialog by remember { mutableStateOf(false) }
-    val weightHistory = remember { initialWeightHistory.toMutableStateList() }
+    val context = LocalContext.current
+    val weightHistory = remember {
+        initialWeightHistory.toMutableStateList().also { list ->
+            WeightStore.load(context)?.let { saved ->
+                val day = saved.date.format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
+                if (list.last().day == day) {
+                    list[list.lastIndex] = WeightEntry(day, saved.kg)
+                } else {
+                    list.add(WeightEntry(day, saved.kg))
+                }
+            }
+        }
+    }
     val current = weightHistory.last().kg
 
     LazyColumn(
@@ -87,6 +101,7 @@ fun WeightTrackerScreen(navController: NavController) {
         LogWeightDialog(
             onDismiss = { showLogDialog = false },
             onSave = { kg ->
+                WeightStore.save(context, kg)
                 val today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
                 val lastIndex = weightHistory.lastIndex
                 if (weightHistory[lastIndex].day == today) {
