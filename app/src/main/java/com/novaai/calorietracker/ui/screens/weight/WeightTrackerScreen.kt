@@ -33,6 +33,7 @@ import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private data class WeightEntry(val day: String, val kg: Float)
 
@@ -63,6 +64,9 @@ fun WeightTrackerScreen(navController: NavController) {
         }
     }
     val current = weightHistory.last().kg
+    val savedGoals = remember { WeightGoalStore.load(context) }
+    var startKg by remember { mutableStateOf(savedGoals.startKg) }
+    var goalKg by remember { mutableStateOf(savedGoals.goalKg) }
 
     LazyColumn(
         modifier = Modifier
@@ -79,7 +83,7 @@ fun WeightTrackerScreen(navController: NavController) {
                 )
             }
         }
-        item { WeightHeroSection(current) }
+        item { WeightHeroSection(current, startKg ?: 80.0f, goalKg ?: 70.0f) }
         item { Spacer(Modifier.height(20.dp)) }
         item { WeightChartCard(weightHistory.takeLast(7)) }
         item { Spacer(Modifier.height(20.dp)) }
@@ -95,7 +99,15 @@ fun WeightTrackerScreen(navController: NavController) {
             WeightHistoryRow(entry, i == 0)
         }
         item { Spacer(Modifier.height(20.dp)) }
-        item { WeightGoalCard(current) }
+        item {
+            WeightGoalCard(
+                current = current,
+                startKg = startKg,
+                goalKg = goalKg,
+                onStartChange = { startKg = it },
+                onGoalChange = { goalKg = it }
+            )
+        }
     }
 
     if (showLogDialog) {
@@ -118,10 +130,13 @@ fun WeightTrackerScreen(navController: NavController) {
 }
 
 @Composable
-private fun WeightHeroSection(current: Float) {
-    val start   = 80.0f
-    val goal    = 70.0f
-    val progress = ((start - current) / (start - goal)).coerceIn(0f, 1f)
+private fun WeightHeroSection(current: Float, start: Float, goal: Float) {
+    val range = start - goal
+    val progress = if (range > 0f) {
+        ((start - current) / range).coerceIn(0f, 1f)
+    } else {
+        if (current <= goal) 1f else 0f
+    }
 
     Row(
         modifier = Modifier
@@ -167,7 +182,7 @@ private fun WeightHeroSection(current: Float) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "${(progress * 100).toInt()}%",
+                        text = "${(progress * 100).roundToInt()}%",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = GreenPrimary
@@ -297,15 +312,18 @@ private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
 }
 
 @Composable
-private fun WeightGoalCard(current: Float) {
+private fun WeightGoalCard(
+    current: Float,
+    startKg: Float?,
+    goalKg: Float?,
+    onStartChange: (Float) -> Unit,
+    onGoalChange: (Float) -> Unit
+) {
     val context = LocalContext.current
-    val savedGoals = remember { WeightGoalStore.load(context) }
-    var startKg by remember { mutableStateOf(savedGoals.startKg) }
-    var goalKg by remember { mutableStateOf(savedGoals.goalKg) }
     var showStartDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
 
-    val remaining = ((current - 70.0f).coerceAtLeast(0f) * 10).toInt() / 10f
+    val remaining = "%.1f".format((current - (goalKg ?: 70.0f)).coerceAtLeast(0f))
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
@@ -316,7 +334,7 @@ private fun WeightGoalCard(current: Float) {
             }
             StatChip(label = stringResource(R.string.weight_start),     value = "%.1f".format(startKg ?: 80.0f), unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showStartDialog = true }, accentColor = WhiteAlpha60)
             StatChip(label = stringResource(R.string.weight_goal),      value = "%.1f".format(goalKg ?: 70.0f),  unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showGoalDialog = true },  accentColor = GreenPrimary)
-            StatChip(label = stringResource(R.string.weight_remaining), value = "$remaining", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
+            StatChip(label = stringResource(R.string.weight_remaining), value = remaining, unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
         }
     }
 
@@ -326,7 +344,7 @@ private fun WeightGoalCard(current: Float) {
             onDismiss = { showStartDialog = false },
             onSave = { kg ->
                 WeightGoalStore.saveStart(context, kg)
-                startKg = kg
+                onStartChange(kg)
                 showStartDialog = false
             }
         )
@@ -337,7 +355,7 @@ private fun WeightGoalCard(current: Float) {
             onDismiss = { showGoalDialog = false },
             onSave = { kg ->
                 WeightGoalStore.saveGoal(context, kg)
-                goalKg = kg
+                onGoalChange(kg)
                 showGoalDialog = false
             }
         )
