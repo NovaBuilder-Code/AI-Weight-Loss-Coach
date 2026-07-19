@@ -104,6 +104,8 @@
     <string name="weight_remaining">Remaining</string>
     <string name="weight_dialog_title">Log Today\'s Weight</string>
     <string name="weight_dialog_label">Weight (kg)</string>
+    <string name="weight_start_dialog_title">Set Start Weight</string>
+    <string name="weight_goal_dialog_title">Set Goal Weight</string>
 
     <!-- Weight Goals Screen -->
     <string name="weight_goals_title">Weight Goals</string>

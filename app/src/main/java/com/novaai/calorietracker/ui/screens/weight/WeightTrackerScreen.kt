@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.WeightGoalStore
 import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
@@ -99,6 +100,7 @@ fun WeightTrackerScreen(navController: NavController) {
 
     if (showLogDialog) {
         LogWeightDialog(
+            title = stringResource(R.string.weight_dialog_title),
             onDismiss = { showLogDialog = false },
             onSave = { kg ->
                 WeightStore.save(context, kg)
@@ -296,6 +298,13 @@ private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
 
 @Composable
 private fun WeightGoalCard(current: Float) {
+    val context = LocalContext.current
+    val savedGoals = remember { WeightGoalStore.load(context) }
+    var startKg by remember { mutableStateOf(savedGoals.startKg) }
+    var goalKg by remember { mutableStateOf(savedGoals.goalKg) }
+    var showStartDialog by remember { mutableStateOf(false) }
+    var showGoalDialog by remember { mutableStateOf(false) }
+
     val remaining = ((current - 70.0f).coerceAtLeast(0f) * 10).toInt() / 10f
     NovaCard(modifier = Modifier
         .fillMaxWidth()
@@ -305,21 +314,44 @@ private fun WeightGoalCard(current: Float) {
                 Icon(Icons.Default.Flag, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp))
                 Text(stringResource(R.string.weight_goal_settings), style = MaterialTheme.typography.titleLarge)
             }
-            StatChip(label = stringResource(R.string.weight_start),     value = "80.0", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = WhiteAlpha60)
-            StatChip(label = stringResource(R.string.weight_goal),      value = "70.0", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = GreenPrimary)
+            StatChip(label = stringResource(R.string.weight_start),     value = "%.1f".format(startKg ?: 80.0f), unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showStartDialog = true }, accentColor = WhiteAlpha60)
+            StatChip(label = stringResource(R.string.weight_goal),      value = "%.1f".format(goalKg ?: 70.0f),  unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showGoalDialog = true },  accentColor = GreenPrimary)
             StatChip(label = stringResource(R.string.weight_remaining), value = "$remaining", unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
         }
+    }
+
+    if (showStartDialog) {
+        LogWeightDialog(
+            title = stringResource(R.string.weight_start_dialog_title),
+            onDismiss = { showStartDialog = false },
+            onSave = { kg ->
+                WeightGoalStore.saveStart(context, kg)
+                startKg = kg
+                showStartDialog = false
+            }
+        )
+    }
+    if (showGoalDialog) {
+        LogWeightDialog(
+            title = stringResource(R.string.weight_goal_dialog_title),
+            onDismiss = { showGoalDialog = false },
+            onSave = { kg ->
+                WeightGoalStore.saveGoal(context, kg)
+                goalKg = kg
+                showGoalDialog = false
+            }
+        )
     }
 }
 
 @Composable
-private fun LogWeightDialog(onDismiss: () -> Unit, onSave: (Float) -> Unit) {
+private fun LogWeightDialog(title: String, onDismiss: () -> Unit, onSave: (Float) -> Unit) {
     var text by remember { mutableStateOf("") }
     val parsed = text.replace(',', '.').toFloatOrNull()
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = NavySurface,
-        title = { Text(stringResource(R.string.weight_dialog_title), color = White) },
+        title = { Text(title, color = White) },
         text = {
             OutlinedTextField(
                 value = text,
