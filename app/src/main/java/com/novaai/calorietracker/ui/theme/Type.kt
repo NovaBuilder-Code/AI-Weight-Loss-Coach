@@ -6,7 +6,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val NovaTypography = Typography(
+// A getter (not a one-shot val) so the text colours are re-resolved
+// against the active palette whenever the theme recomposes.
+val NovaTypography: Typography get() = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,

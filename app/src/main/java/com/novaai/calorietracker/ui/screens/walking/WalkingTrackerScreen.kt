@@ -99,7 +99,7 @@ private fun StepHeroCard(todaySteps: Int, isTracking: Boolean, onToggle: () -> U
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         gradient = Brush.linearGradient(
-            listOf(Color(0xFF0A2418), NavyElevated)
+            listOf(GreenTintCard, NavyElevated)
         )
     ) {
         Column(

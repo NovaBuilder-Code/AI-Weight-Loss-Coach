@@ -16,9 +16,11 @@ import androidx.navigation.compose.rememberNavController
 import com.novaai.calorietracker.navigation.NovaNavGraph
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.navigation.bottomNavItems
+import com.novaai.calorietracker.data.ThemeStore
 import com.novaai.calorietracker.ui.components.NovaBottomBar
 import com.novaai.calorietracker.ui.theme.NavyDeep
 import com.novaai.calorietracker.ui.theme.NovaAITheme
+import com.novaai.calorietracker.ui.theme.NovaThemeState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        NovaThemeState.mode = ThemeStore.load(this)
         setContent {
             NovaAITheme {
                 val navController = rememberNavController()

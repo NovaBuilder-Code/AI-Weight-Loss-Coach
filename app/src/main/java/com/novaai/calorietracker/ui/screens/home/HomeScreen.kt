@@ -408,7 +408,7 @@ private fun NovaAIInsightCard(navController: NavController) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clickable { navController.navigate(Screen.Chat.route) },
-        gradient = Brush.linearGradient(listOf(Color(0xFF0D2A1F), NavyElevated))
+        gradient = Brush.linearGradient(listOf(GreenTintCard, NavyElevated))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -317,7 +317,10 @@
     <string name="settings_language">Language</string>
     <string name="settings_language_value">English</string>
     <string name="settings_version">App Version</string>
-    <string name="settings_more_options">More options coming soon.</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_light">Light</string>
 
     <!-- Sleep Tracker (MVP) -->
     <string name="sleep_last_night">Last Night</string>

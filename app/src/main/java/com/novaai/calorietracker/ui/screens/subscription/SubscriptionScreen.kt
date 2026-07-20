@@ -148,7 +148,7 @@ private fun PremiumHero() {
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xFF0D2A1A), Color(0xFF1A2640), GreenPrimary.copy(alpha = 0.06f))
+                    listOf(GreenTintCard, NavyElevated, GreenPrimary.copy(alpha = 0.06f))
                 )
             )
             .padding(28.dp),
