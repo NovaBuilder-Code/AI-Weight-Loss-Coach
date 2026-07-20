@@ -26,18 +26,22 @@ import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private data class DaySteps(val day: String, val steps: Int, val goal: Int = 10_000)
 
+// No weekly history storage yet: every day shows an empty bar.
 private val weeklySteps = listOf(
-    DaySteps("Mon", 8_420),
-    DaySteps("Tue", 11_200),
-    DaySteps("Wed", 6_340),
-    DaySteps("Thu", 9_880),
-    DaySteps("Fri", 12_050),
-    DaySteps("Sat", 5_100),
-    DaySteps("Sun", 7_240),
+    DaySteps("Mon", 0),
+    DaySteps("Tue", 0),
+    DaySteps("Wed", 0),
+    DaySteps("Thu", 0),
+    DaySteps("Fri", 0),
+    DaySteps("Sat", 0),
+    DaySteps("Sun", 0),
 )
 
 @Composable
@@ -208,14 +212,16 @@ private fun WeeklyBarChart() {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
+                val todayShort = LocalDate.now().dayOfWeek
+                    .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
                 weeklySteps.forEach { day ->
                     val frac = (day.steps.toFloat() / day.goal).coerceIn(0f, 1f)
-                    val isToday = day.day == "Sun"
+                    val isToday = day.day == todayShort
                     DayBar(
                         label = day.day,
                         fraction = frac,
                         isToday = isToday,
-                        reachedGoal = day.steps >= day.goal
+                        reachedGoal = day.steps > 0 && day.steps >= day.goal
                     )
                 }
             }
