@@ -12,7 +12,7 @@ object StepsStore {
     private const val PREFS_NAME = "steps_tracker"
     private const val KEY_STEPS = "today_steps"
     private const val KEY_STEPS_DATE = "steps_date"
-    private const val DEFAULT_STEPS = 7_240
+    private const val DEFAULT_STEPS = 0
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
