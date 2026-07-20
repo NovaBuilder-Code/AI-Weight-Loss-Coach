@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Continua così!</string>
     <string name="walking_ach_speed_title">Camminatore veloce</string>
     <string name="walking_ach_speed_sub">Media 5,4 km/h</string>
+    <string name="walking_ach_empty_title">Nessun traguardo per ora</string>
+    <string name="walking_ach_empty_sub">Continua a camminare per sbloccare il tuo primo traguardo.</string>
     <string name="profile_title">Profilo</string>
     <string name="profile_section_account">Account</string>
     <string name="profile_section_app">App</string>

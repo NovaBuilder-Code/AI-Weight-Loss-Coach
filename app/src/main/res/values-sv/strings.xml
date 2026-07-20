@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Fortsätt så!</string>
     <string name="walking_ach_speed_title">Snabbgångare</string>
     <string name="walking_ach_speed_sub">Genomsnitt 5,4 km/h</string>
+    <string name="walking_ach_empty_title">Inga prestationer än</string>
+    <string name="walking_ach_empty_sub">Fortsätt gå för att låsa upp din första prestation.</string>
     <string name="profile_title">Profil</string>
     <string name="profile_section_account">Konto</string>
     <string name="profile_section_app">App</string>

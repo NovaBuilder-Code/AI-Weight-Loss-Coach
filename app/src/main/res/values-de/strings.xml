@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Weiter so!</string>
     <string name="walking_ach_speed_title">Schnellgeher</string>
     <string name="walking_ach_speed_sub">Durchschn. 5,4 km/h</string>
+    <string name="walking_ach_empty_title">Noch keine Erfolge</string>
+    <string name="walking_ach_empty_sub">Geh weiter, um deinen ersten Erfolg freizuschalten.</string>
     <string name="profile_title">Profil</string>
     <string name="profile_section_account">Konto</string>
     <string name="profile_section_app">App</string>

@@ -137,6 +137,8 @@
     <string name="walking_ach_streak_sub">Keep it up!</string>
     <string name="walking_ach_speed_title">Speed Walker</string>
     <string name="walking_ach_speed_sub">Avg. 5.4 km/h</string>
+    <string name="walking_ach_empty_title">No achievements yet</string>
+    <string name="walking_ach_empty_sub">Keep walking to unlock your first achievement.</string>
 
     <!-- Profile Screen -->
     <string name="profile_title">Profile</string>

@@ -117,6 +117,8 @@
     <string name="walking_ach_streak_sub">Fortsett slik!</string>
     <string name="walking_ach_speed_title">Rask gåer</string>
     <string name="walking_ach_speed_sub">Gjennomsnitt 5,4 km/t</string>
+    <string name="walking_ach_empty_title">Ingen prestasjoner ennå</string>
+    <string name="walking_ach_empty_sub">Fortsett å gå for å låse opp din første prestasjon.</string>
 
     <!-- Profile Screen -->
     <string name="profile_title">Profil</string>

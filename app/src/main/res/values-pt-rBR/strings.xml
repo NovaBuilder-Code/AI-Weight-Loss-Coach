@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Continue assim!</string>
     <string name="walking_ach_speed_title">Caminhante veloz</string>
     <string name="walking_ach_speed_sub">Média de 5,4 km/h</string>
+    <string name="walking_ach_empty_title">Nenhuma conquista ainda</string>
+    <string name="walking_ach_empty_sub">Continue caminhando para desbloquear sua primeira conquista.</string>
     <string name="profile_title">Perfil</string>
     <string name="profile_section_account">Conta</string>
     <string name="profile_section_app">Aplicativo</string>

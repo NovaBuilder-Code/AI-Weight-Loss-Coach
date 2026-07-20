@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Fortsæt sådan!</string>
     <string name="walking_ach_speed_title">Hurtiggånger</string>
     <string name="walking_ach_speed_sub">Gns. 5,4 km/t</string>
+    <string name="walking_ach_empty_title">Ingen præstationer endnu</string>
+    <string name="walking_ach_empty_sub">Fortsæt med at gå for at låse din første præstation op.</string>
     <string name="profile_title">Profil</string>
     <string name="profile_section_account">Konto</string>
     <string name="profile_section_app">App</string>

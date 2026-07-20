@@ -297,11 +297,7 @@ private fun LegendDot(color: Color, label: String) {
 
 @Composable
 private fun AchievementsCard() {
-    val achievements = listOf(
-        Triple("🏃", stringResource(R.string.walking_ach_first_10k_title), stringResource(R.string.walking_ach_first_10k_sub)),
-        Triple("🔥", stringResource(R.string.walking_ach_streak_title),    stringResource(R.string.walking_ach_streak_sub)),
-        Triple("⚡", stringResource(R.string.walking_ach_speed_title),      stringResource(R.string.walking_ach_speed_sub)),
-    )
+    // No achievement tracking yet: show an empty state instead of sample rows.
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
@@ -310,25 +306,9 @@ private fun AchievementsCard() {
                 Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(20.dp))
                 Text(stringResource(R.string.walking_achievements_title), style = MaterialTheme.typography.titleLarge)
             }
-            achievements.forEach { (emoji, title, sub) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(WarningAmber.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(emoji, fontSize = 18.sp)
-                    }
-                    Column {
-                        Text(title, style = MaterialTheme.typography.titleMedium)
-                        Text(sub, style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
-                    }
-                }
+            Column {
+                Text(stringResource(R.string.walking_ach_empty_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.walking_ach_empty_sub), style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
             }
         }
     }

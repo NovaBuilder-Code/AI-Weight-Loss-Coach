@@ -105,6 +105,8 @@
     <string name="walking_ach_streak_sub">Continue comme ça !</string>
     <string name="walking_ach_speed_title">Marcheur rapide</string>
     <string name="walking_ach_speed_sub">Moy. 5,4 km/h</string>
+    <string name="walking_ach_empty_title">Aucun accomplissement pour l\'instant</string>
+    <string name="walking_ach_empty_sub">Continue à marcher pour débloquer ton premier accomplissement.</string>
     <string name="profile_title">Profil</string>
     <string name="profile_section_account">Compte</string>
     <string name="profile_section_app">Application</string>
