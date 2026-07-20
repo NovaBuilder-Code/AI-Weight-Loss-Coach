@@ -16,12 +16,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 
@@ -39,7 +41,11 @@ private val weeklySteps = listOf(
 
 @Composable
 fun WalkingTrackerScreen(navController: NavController) {
+    val context = LocalContext.current
     var isTracking by remember { mutableStateOf(false) }
+    var todaySteps by remember { mutableIntStateOf(StepsStore.loadToday(context)) }
+
+    LaunchedEffect(todaySteps) { StepsStore.save(context, todaySteps) }
 
     LazyColumn(
         modifier = Modifier
@@ -51,7 +57,7 @@ fun WalkingTrackerScreen(navController: NavController) {
             NovaTopBar(title = stringResource(R.string.walking_tracker_title), onBack = { navController.popBackStack() })
         }
         item { Spacer(Modifier.height(8.dp)) }
-        item { StepHeroCard(isTracking) { isTracking = !isTracking } }
+        item { StepHeroCard(todaySteps, isTracking) { isTracking = !isTracking } }
         item { Spacer(Modifier.height(20.dp)) }
         item { WalkingStatsRow() }
         item { Spacer(Modifier.height(20.dp)) }
@@ -69,8 +75,7 @@ fun WalkingTrackerScreen(navController: NavController) {
 }
 
 @Composable
-private fun StepHeroCard(isTracking: Boolean, onToggle: () -> Unit) {
-    val todaySteps = 7_240
+private fun StepHeroCard(todaySteps: Int, isTracking: Boolean, onToggle: () -> Unit) {
     val goal = 10_000
     val progress = todaySteps.toFloat() / goal
 
