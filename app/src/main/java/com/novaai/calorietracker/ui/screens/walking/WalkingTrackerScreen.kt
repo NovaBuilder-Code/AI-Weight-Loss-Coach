@@ -26,6 +26,7 @@ import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
+import kotlin.math.roundToInt
 
 private data class DaySteps(val day: String, val steps: Int, val goal: Int = 10_000)
 
@@ -59,7 +60,7 @@ fun WalkingTrackerScreen(navController: NavController) {
         item { Spacer(Modifier.height(8.dp)) }
         item { StepHeroCard(todaySteps, isTracking) { isTracking = !isTracking } }
         item { Spacer(Modifier.height(20.dp)) }
-        item { WalkingStatsRow() }
+        item { WalkingStatsRow(todaySteps) }
         item { Spacer(Modifier.height(20.dp)) }
         item {
             SectionHeader(
@@ -163,11 +164,16 @@ private fun StepHeroCard(todaySteps: Int, isTracking: Boolean, onToggle: () -> U
 }
 
 @Composable
-private fun WalkingStatsRow() {
+private fun WalkingStatsRow(todaySteps: Int) {
+    // MVP estimates derived from the saved step count, never stored separately.
+    val distanceKm = todaySteps * 0.00075
+    val calories = (todaySteps * 0.04).roundToInt()
+    val minutes = todaySteps / 100
+    val durationText = if (minutes < 60) "${minutes}m" else "${minutes / 60}h ${minutes % 60}m"
     val stats = listOf(
-        Triple(stringResource(R.string.walking_stat_distance), "5.4", stringResource(R.string.km)),
-        Triple(stringResource(R.string.walking_stat_calories), "340", stringResource(R.string.kcal)),
-        Triple(stringResource(R.string.walking_stat_duration), "1h 12m", "")
+        Triple(stringResource(R.string.walking_stat_distance), "%.1f".format(distanceKm), stringResource(R.string.km)),
+        Triple(stringResource(R.string.walking_stat_calories), calories.toString(), stringResource(R.string.kcal)),
+        Triple(stringResource(R.string.walking_stat_duration), durationText, "")
     )
     Row(
         modifier = Modifier
