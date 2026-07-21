@@ -15,10 +15,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +24,7 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.AppLanguage
 import com.novaai.calorietracker.data.LanguageStore
+import com.novaai.calorietracker.data.NovaLanguageState
 import com.novaai.calorietracker.data.ThemeMode
 import com.novaai.calorietracker.data.ThemeStore
 import com.novaai.calorietracker.ui.components.NovaCard
@@ -74,8 +71,6 @@ fun SettingsScreen(navController: NavController) {
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         Spacer(Modifier.height(8.dp))
-        val context = LocalContext.current
-        var selectedLanguage by remember { mutableStateOf(LanguageStore.load(context)) }
         NovaCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -83,40 +78,31 @@ fun SettingsScreen(navController: NavController) {
             cornerRadius = 18.dp
         ) {
             Column {
-                LanguageRow(R.string.settings_language_english, AppLanguage.ENGLISH, selectedLanguage) {
-                    selectedLanguage = it
-                    LanguageStore.save(context, it)
-                }
-                LanguageRow(R.string.settings_language_norsk, AppLanguage.NORSK, selectedLanguage) {
-                    selectedLanguage = it
-                    LanguageStore.save(context, it)
-                }
-                LanguageRow(R.string.settings_language_svenska, AppLanguage.SVENSKA, selectedLanguage) {
-                    selectedLanguage = it
-                    LanguageStore.save(context, it)
-                }
+                LanguageRow(R.string.settings_language_english, AppLanguage.ENGLISH)
+                LanguageRow(R.string.settings_language_norsk, AppLanguage.NORSK)
+                LanguageRow(R.string.settings_language_svenska, AppLanguage.SVENSKA)
             }
         }
     }
 }
 
 @Composable
-private fun LanguageRow(
-    @StringRes labelRes: Int,
-    language: AppLanguage,
-    selected: AppLanguage,
-    onSelect: (AppLanguage) -> Unit
-) {
+private fun LanguageRow(@StringRes labelRes: Int, language: AppLanguage) {
+    val context = LocalContext.current
+    val select = {
+        NovaLanguageState.language = language
+        LanguageStore.save(context, language)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onSelect(language) }
+            .clickable(onClick = select)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
-            selected = selected == language,
-            onClick = { onSelect(language) },
+            selected = NovaLanguageState.language == language,
+            onClick = select,
             colors = RadioButtonDefaults.colors(
                 selectedColor = GreenPrimary,
                 unselectedColor = WhiteAlpha30

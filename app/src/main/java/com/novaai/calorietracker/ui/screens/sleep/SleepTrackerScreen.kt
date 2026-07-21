@@ -1,5 +1,6 @@
 package com.novaai.calorietracker.ui.screens.sleep
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -30,19 +31,19 @@ import com.novaai.calorietracker.ui.theme.*
 private val SleepPurple = Color(0xFF9B8FFF)
 private const val GOAL_HOURS = 8f
 
-private data class SleepNight(val day: String, val hours: Float)
+private data class SleepNight(@StringRes val dayRes: Int, val hours: Float)
 
 @Composable
 fun SleepTrackerScreen(navController: NavController) {
     val week = remember {
         mutableStateListOf(
-            SleepNight("Mon", 6.8f),
-            SleepNight("Tue", 7.5f),
-            SleepNight("Wed", 8.1f),
-            SleepNight("Thu", 6.2f),
-            SleepNight("Fri", 7.9f),
-            SleepNight("Sat", 8.4f),
-            SleepNight("Sun", 7.3f)
+            SleepNight(R.string.streaks_day_mon, 6.8f),
+            SleepNight(R.string.streaks_day_tue, 7.5f),
+            SleepNight(R.string.streaks_day_wed, 8.1f),
+            SleepNight(R.string.streaks_day_thu, 6.2f),
+            SleepNight(R.string.streaks_day_fri, 7.9f),
+            SleepNight(R.string.streaks_day_sat, 8.4f),
+            SleepNight(R.string.streaks_day_sun, 7.3f)
         )
     }
     var showLogDialog by remember { mutableStateOf(false) }
@@ -255,7 +256,7 @@ private fun SleepBar(night: SleepNight) {
             )
         }
         Text(
-            text = night.day,
+            text = stringResource(night.dayRes),
             style = MaterialTheme.typography.labelSmall,
             color = WhiteAlpha60
         )

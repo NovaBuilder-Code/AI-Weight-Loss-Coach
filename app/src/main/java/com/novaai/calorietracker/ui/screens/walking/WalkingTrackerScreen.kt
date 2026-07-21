@@ -26,22 +26,22 @@ import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
+import androidx.annotation.StringRes
 import java.time.LocalDate
-import java.time.format.TextStyle
-import java.util.Locale
 import kotlin.math.roundToInt
 
-private data class DaySteps(val day: String, val steps: Int, val goal: Int = 10_000)
+private data class DaySteps(@StringRes val labelRes: Int, val steps: Int, val goal: Int = 10_000)
 
 // No weekly history storage yet: every day shows an empty bar.
+// Monday first, matching DayOfWeek.value (Monday == 1).
 private val weeklySteps = listOf(
-    DaySteps("Mon", 0),
-    DaySteps("Tue", 0),
-    DaySteps("Wed", 0),
-    DaySteps("Thu", 0),
-    DaySteps("Fri", 0),
-    DaySteps("Sat", 0),
-    DaySteps("Sun", 0),
+    DaySteps(R.string.streaks_day_mon, 0),
+    DaySteps(R.string.streaks_day_tue, 0),
+    DaySteps(R.string.streaks_day_wed, 0),
+    DaySteps(R.string.streaks_day_thu, 0),
+    DaySteps(R.string.streaks_day_fri, 0),
+    DaySteps(R.string.streaks_day_sat, 0),
+    DaySteps(R.string.streaks_day_sun, 0),
 )
 
 @Composable
@@ -212,13 +212,12 @@ private fun WeeklyBarChart() {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
-                val todayShort = LocalDate.now().dayOfWeek
-                    .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-                weeklySteps.forEach { day ->
+                val todayIndex = LocalDate.now().dayOfWeek.value - 1
+                weeklySteps.forEachIndexed { index, day ->
                     val frac = (day.steps.toFloat() / day.goal).coerceIn(0f, 1f)
-                    val isToday = day.day == todayShort
+                    val isToday = index == todayIndex
                     DayBar(
-                        label = day.day,
+                        label = stringResource(day.labelRes),
                         fraction = frac,
                         isToday = isToday,
                         reachedGoal = day.steps > 0 && day.steps >= day.goal

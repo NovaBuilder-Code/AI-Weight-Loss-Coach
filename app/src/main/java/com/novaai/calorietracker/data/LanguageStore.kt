@@ -2,9 +2,25 @@ package com.novaai.calorietracker.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 /** App language selection offered on the Settings screen (beta languages). */
-enum class AppLanguage { ENGLISH, NORSK, SVENSKA }
+enum class AppLanguage(val tag: String) {
+    ENGLISH("en"),
+    NORSK("nb"),
+    SVENSKA("sv")
+}
+
+/**
+ * App-wide language selection. Initialised from LanguageStore in MainActivity
+ * and updated by the Settings screen; MainActivity applies it to the
+ * composition so all string resources resolve in the selected locale.
+ */
+object NovaLanguageState {
+    var language by mutableStateOf(AppLanguage.ENGLISH)
+}
 
 /**
  * Single source of truth for the locally saved language selection.

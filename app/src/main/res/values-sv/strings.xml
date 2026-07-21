@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Nova AI</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_brand">NOVA</string>
+    <string name="onboarding_brand_sub">AI COACH</string>
+    <string name="onboarding_headline">Din AI-coach.\nDin träningspartner.\nDin bästa version.</string>
+    <string name="onboarding_feature_ai_coach">AI-coach</string>
+    <string name="onboarding_feature_calorie_tracking">Kalorispårning</string>
+    <string name="onboarding_feature_photo_scan">Matfotoskanning</string>
+    <string name="onboarding_feature_walking_goals">Promenadmål</string>
+    <string name="onboarding_feature_weight_goals">Viktmål</string>
+    <string name="onboarding_feature_meal_suggestions">Måltidsförslag</string>
+    <string name="onboarding_feature_daily_streaks">Dagliga streaks</string>
+    <string name="onboarding_feature_sleep_tracker">Sömnspårning</string>
+    <string name="onboarding_cta">Låt oss börja din resa</string>
+    <string name="onboarding_hero_cd">Nova, din AI-coach</string>
+
     <string name="nav_home">Hem</string>
     <string name="nav_chat">Nova AI</string>
     <string name="nav_weight">Vikt</string>
@@ -16,6 +32,7 @@
     <string name="steps_unit">steg</string>
     <string name="liters">L</string>
     <string name="sign_out">Logga ut</string>
+    <string name="nova_avatar_cd">Nova, din AI-coach</string>
     <string name="home_greeting">God morgon,</string>
     <string name="home_user_name">Alex 👋</string>
     <string name="home_section_todays_stats">Dagens statistik</string>
@@ -78,6 +95,8 @@
     <string name="weight_remaining">Återstår</string>
     <string name="weight_dialog_title">Logga dagens vikt</string>
     <string name="weight_dialog_label">Vikt (kg)</string>
+    <string name="weight_start_dialog_title">Ange startvikt</string>
+    <string name="weight_goal_dialog_title">Ange målvikt</string>
     <string name="weight_goals_title">Viktmål</string>
     <string name="weight_goals_current">Aktuell vikt</string>
     <string name="weight_goals_goal">Målvikt</string>
@@ -168,6 +187,10 @@
     <string name="subscription_snackbar_terms">Användarvillkor — kommer snart</string>
     <string name="subscription_snackbar_privacy_policy">Integritetspolicy — kommer snart</string>
     <string name="subscription_snackbar_restore">Återställ köp — kommer snart</string>
+    <string name="ai_coach_title">AI-coach</string>
+    <string name="ai_coach_welcome_message">Hej! Jag är Nova, din personliga AI-hälsocoach. Fråga mig vad som helst om kost, viktnedgång, träning, sömn eller hälsosamma vanor.</string>
+    <string name="ai_coach_input_hint">Fråga Nova vad som helst…</string>
+    <string name="ai_coach_snackbar_coming_soon">AI-chatt kommer snart</string>
     <string name="scan_food_title">Skanna Mat</string>
     <string name="scan_food_body">Ta eller ladda upp ett foto på din mat så uppskattar Nova AI kalorier, protein, kolhydrater och fett.</string>
     <string name="scan_food_take_photo">Ta Foto</string>
@@ -175,6 +198,10 @@
     <string name="scan_food_helper">AI-matigenkänning kommer att läggas till i nästa version.</string>
     <string name="scan_food_snackbar_camera">Kameraskanning kommer snart</string>
     <string name="scan_food_snackbar_gallery">Galleriuppladdning kommer snart</string>
+    <string name="scan_food_snackbar_photo_selected">Foto valt</string>
+    <string name="scan_food_snackbar_photo_captured">Foto taget</string>
+    <string name="scan_food_choose_another">Välj ett annat foto</string>
+    <string name="scan_food_preview_description">Valt matfoto</string>
 
     <string name="placeholder_calorie_tracker_title">Kaloriräknare</string>
     <string name="placeholder_calorie_tracker_sub">Logga varje måltid, mellanmål och dryck. Sök bland miljontals livsmedel eller skanna streckkoder för omedelbara näringsvärden och makrospårning.</string>
@@ -217,4 +244,148 @@
     <string name="placeholder_water_sub">Logga varje glas och håll koll på ditt dagliga hydrerings­mål. Nova AI påminner dig att dricka mer vatten när du halkar efter.</string>
     <string name="placeholder_sleep_title">Sömnspårning</string>
     <string name="placeholder_sleep_sub">Spåra din sömnduration och sömnkvalitet. God sömn är avgörande för viktnedgång — Nova AI tar hänsyn till din vila i den dagliga hälsocoachningen.</string>
+
+    <!-- Daily Streaks (interactive) -->
+    <string name="streaks_completed_button">Slutfört idag ✓</string>
+    <string name="streaks_completed_snackbar">🔥 Mål slutfört — streaken förlängd!</string>
+
+    <!-- Calorie Tracker (MVP) -->
+    <string name="calorie_section_meals">Dagens måltider</string>
+    <string name="calorie_add_meal_cd">Lägg till måltid</string>
+    <string name="calorie_delete_meal_cd">Ta bort måltid</string>
+    <string name="calorie_dialog_title">Lägg till måltid</string>
+    <string name="calorie_dialog_name">Måltidsnamn</string>
+    <string name="calorie_dialog_kcal">Kalorier (kcal)</string>
+    <string name="calorie_add_button">Lägg till</string>
+    <string name="calorie_type_breakfast">Frukost</string>
+    <string name="calorie_type_lunch">Lunch</string>
+    <string name="calorie_type_snack">Mellanmål</string>
+    <string name="calorie_meal1">Havregrynsgröt och bär</string>
+    <string name="calorie_meal2">Grillad kycklingsallad</string>
+    <string name="calorie_meal3">Grekisk yoghurt och honung</string>
+
+    <!-- Meal Suggestions (MVP) -->
+    <string name="meals_header">Novas förslag baserat på dina återstående kalorier idag</string>
+    <string name="meals_item1_title">Grillad laxbowl</string>
+    <string name="meals_item1_sub">Lax, quinoa, avokado och grönt</string>
+    <string name="meals_item2_title">Kyckling- och grönsakswok</string>
+    <string name="meals_item2_sub">Kycklingbröst, broccoli, paprika och ris</string>
+    <string name="meals_item3_title">Grekisk yoghurtparfait</string>
+    <string name="meals_item3_sub">Yoghurt, granola, bär och honung</string>
+    <string name="meals_item4_title">Linsbowl</string>
+    <string name="meals_item4_sub">Linser, rostade grönsaker och tahini</string>
+    <string name="meals_tag_protein">Proteinrik</string>
+    <string name="meals_tag_balanced">Balanserad</string>
+    <string name="meals_tag_light">Lätt</string>
+    <string name="meals_tag_veggie">Vegetarisk</string>
+
+    <!-- Settings (MVP) -->
+    <string name="settings_section_preferences">Preferenser</string>
+    <string name="settings_metric">Metriska enheter</string>
+    <string name="settings_metric_sub">Kilogram, kilometer, liter</string>
+    <string name="settings_sounds">Ljud</string>
+    <string name="settings_sounds_sub">Ljudeffekter i appen</string>
+    <string name="settings_haptics">Vibration</string>
+    <string name="settings_haptics_sub">Haptisk återkoppling</string>
+    <string name="settings_section_general">Allmänt</string>
+    <string name="settings_notifications_row">Aviseringar</string>
+    <string name="settings_notifications_row_sub">Hantera påminnelser och aviseringar</string>
+    <string name="settings_language">Språk</string>
+    <string name="settings_language_value">Svenska</string>
+    <string name="settings_version">Appversion</string>
+    <string name="settings_section_appearance">Utseende</string>
+    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_dark">Mörkt</string>
+    <string name="settings_theme_light">Ljust</string>
+    <string name="settings_section_language">Språk</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_norsk">Norsk</string>
+    <string name="settings_language_svenska">Svenska</string>
+
+    <!-- Sleep Tracker (MVP) -->
+    <string name="sleep_last_night">I natt</string>
+    <string name="sleep_quality">Sömnkvalitet</string>
+    <string name="sleep_quality_good">God</string>
+    <string name="sleep_section_week">Den här veckan</string>
+    <string name="sleep_log_button">Logga sömn</string>
+    <string name="sleep_dialog_title">Logga nattens sömn</string>
+    <string name="sleep_dialog_label">Antal sovtimmar (t.ex. 7,5)</string>
+    <string name="sleep_bedtime">Läggdags</string>
+    <string name="sleep_wakeup">Uppvaknande</string>
+    <string name="sleep_tip_title">Novas sömntips</string>
+    <string name="sleep_tip_text">Regelbundna läggtider hjälper till att reglera din ämnesomsättning. Sikta på 7–9 timmar för att stödja dina viktmål.</string>
+
+    <!-- Water Tracker (MVP) -->
+    <string name="water_today">Dagens intag</string>
+    <string name="water_goal_label">Dagligt mål: 2,5 L</string>
+    <string name="water_add_glass">+ Glas (250 ml)</string>
+    <string name="water_add_bottle">+ Flaska (500 ml)</string>
+    <string name="water_undo">Ångra senaste</string>
+    <string name="water_goal_reached">🎉 Dagligt mål uppnått!</string>
+    <string name="water_tip_title">Novas hydreringstips</string>
+    <string name="water_tip_text">Drick ett glas vatten före varje måltid — det stödjer matsmältningen och hjälper till att kontrollera aptiten.</string>
+
+    <!-- Goals (MVP) -->
+    <string name="goals_section">Dagliga mål</string>
+    <string name="goals_hint">Tryck på ett mål för att justera det. Nova AI använder dessa mål för att coacha dig.</string>
+    <string name="goals_calories">Dagliga kalorier</string>
+    <string name="goals_steps">Dagliga steg</string>
+    <string name="goals_water">Vatten (L)</string>
+    <string name="goals_sleep">Sömn (timmar)</string>
+    <string name="goals_weight">Målvikt (kg)</string>
+    <string name="goals_dialog_title">Redigera mål</string>
+    <string name="goals_dialog_label">Nytt värde</string>
+
+    <!-- Notifications (MVP) -->
+    <string name="notif_section">Påminnelser</string>
+    <string name="notif_meals">Måltidspåminnelser</string>
+    <string name="notif_meals_sub">Logga frukost, lunch och middag</string>
+    <string name="notif_water">Hydreringsaviseringar</string>
+    <string name="notif_water_sub">Påminnelser om att dricka vatten</string>
+    <string name="notif_weighin">Vägningspåminnelse</string>
+    <string name="notif_weighin_sub">Veckovis framstegskontroll</string>
+    <string name="notif_steps">Stegmålsaviseringar</string>
+    <string name="notif_steps_sub">När du är nära ditt mål</string>
+    <string name="notif_motivation">Daglig motivation</string>
+    <string name="notif_motivation_sub">En boost från Nova varje morgon</string>
+
+    <!-- Personal Info (MVP) -->
+    <string name="pi_name">Namn</string>
+    <string name="pi_email">E-post</string>
+    <string name="pi_age">Ålder</string>
+    <string name="pi_height">Längd (cm)</string>
+    <string name="pi_weight">Vikt (kg)</string>
+    <string name="pi_save">Spara ändringar</string>
+    <string name="pi_saved">Ändringar sparade ✓</string>
+
+    <!-- Privacy (MVP) -->
+    <string name="privacy_section_controls">Datakontroller</string>
+    <string name="privacy_analytics">Anonym analys</string>
+    <string name="privacy_analytics_sub">Hjälp till att förbättra Nova med användningsdata</string>
+    <string name="privacy_personal">Personlig coachning</string>
+    <string name="privacy_personal_sub">Låt Nova lära sig av dina vanor</string>
+    <string name="privacy_section_data">Dina data</string>
+    <string name="privacy_local_title">Lagrat på din enhet</string>
+    <string name="privacy_local_text">I den här versionen stannar alla dina hälsodata på din telefon. Inget laddas upp eller delas med någon.</string>
+
+    <!-- Help & Support (MVP) -->
+    <string name="help_section_faq">Vanliga frågor</string>
+    <string name="help_faq1_q">Hur beräknar Nova mina kalorier?</string>
+    <string name="help_faq1_a">Nova kombinerar dina loggade måltider med din aktivitet för att beräkna dagliga kalorier in och ut.</string>
+    <string name="help_faq2_q">Kan jag ändra mina mål senare?</string>
+    <string name="help_faq2_a">Ja — öppna Profil → Mål och tryck på ett mål för att justera det när som helst.</string>
+    <string name="help_faq3_q">Fungerar appen offline?</string>
+    <string name="help_faq3_a">Ja. All spårning fungerar offline; AI-funktionerna behöver en anslutning när de kommer.</string>
+    <string name="help_faq4_q">Hur fungerar streaks?</string>
+    <string name="help_faq4_a">Slutför minst en hälsosam vana varje dag för att hålla din streak vid liv.</string>
+    <string name="help_section_contact">Kontakta oss</string>
+    <string name="help_email_label">E-postsupport</string>
+    <string name="help_email">support@novaai.app</string>
+    <string name="help_response">Vi svarar vanligtvis inom 24 timmar</string>
+
+    <!-- About (MVP) -->
+    <string name="about_version_label">Version</string>
+    <string name="about_version_value">1.0.0</string>
+    <string name="about_description">Nova AI är din personliga hälsocoach — kalorispårning, viktmål, promenader, hydrering, sömn och dagliga streaks, allt guidat av Nova.</string>
+    <string name="about_made">Skapad med ❤️ för din hälsoresa</string>
 </resources>
