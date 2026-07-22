@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,9 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.ChatResult
 import com.novaai.calorietracker.data.NovaChatService
+import com.novaai.calorietracker.data.chat.ChatHistoryStore
+import com.novaai.calorietracker.data.chat.ChatMessageEntity
+import com.novaai.calorietracker.data.chat.ChatSender
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.NovaAvatar
 import com.novaai.calorietracker.ui.theme.*
@@ -71,6 +75,19 @@ fun ChatScreen(navController: NavController) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var messageIdCounter by remember { mutableIntStateOf(1) }
+    val context = LocalContext.current
+
+    // Restore saved history on open. The welcome message is display-only
+    // (never persisted), so it appears exactly once above the saved thread.
+    LaunchedEffect(Unit) {
+        val saved = ChatHistoryStore.getAllMessages(context)
+        if (saved.isNotEmpty()) {
+            messages = initialMessages + saved.map { entity ->
+                ChatMessage(messageIdCounter++, entity.text, entity.sender == ChatSender.USER)
+            }
+            listState.scrollToItem(messages.size - 1)
+        }
+    }
 
     fun sendMessage(text: String) {
         if (text.isBlank()) return
@@ -80,14 +97,26 @@ fun ChatScreen(navController: NavController) {
         pendingReplies++
 
         scope.launch {
+            ChatHistoryStore.saveMessage(
+                context,
+                ChatMessageEntity(text = userMsg.text, sender = ChatSender.USER, timestamp = System.currentTimeMillis())
+            )
             listState.animateScrollToItem(messages.size)
             // Send through the Cloudflare Worker backend (which holds the
             // OpenAI key server-side — no keys ship inside the app).
-            val responseText = when (val result = NovaChatService.sendMessage(userMsg.text)) {
+            val result = NovaChatService.sendMessage(userMsg.text)
+            val responseText = when (result) {
                 is ChatResult.Success -> result.reply
                 ChatResult.Timeout -> errorTimeout
                 ChatResult.NetworkError -> errorNetwork
                 ChatResult.ServerError -> errorServer
+            }
+            // Only real Nova replies become history; error bubbles stay display-only.
+            if (result is ChatResult.Success) {
+                ChatHistoryStore.saveMessage(
+                    context,
+                    ChatMessageEntity(text = result.reply, sender = ChatSender.NOVA, timestamp = System.currentTimeMillis())
+                )
             }
             messages = messages + ChatMessage(messageIdCounter++, responseText, false, "Now")
             pendingReplies--
