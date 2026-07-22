@@ -77,6 +77,9 @@
     <string name="chat_menu_profile">Profile</string>
     <string name="chat_menu_clear">Clear Chat</string>
     <string name="chat_send_cd">Send</string>
+    <string name="chat_error_timeout">That took a bit too long and the request timed out. Please try again.</string>
+    <string name="chat_error_network">I can\'t reach the server right now. Please check your internet connection and try again.</string>
+    <string name="chat_error_server">Sorry, something went wrong on my end. Please try again in a moment.</string>
     <string name="chat_initial_message">Hi! I\'m Nova, your personal AI health coach. I\'m here to help you reach your goals — nutrition, fitness, weight, and more. What can I help you with today?</string>
     <string name="chat_quick_dinner">What should I eat for dinner?</string>
     <string name="chat_quick_on_track">Am I on track today?</string>

@@ -53,6 +53,9 @@
     <string name="chat_menu_profile">Profilo</string>
     <string name="chat_menu_clear">Cancella chat</string>
     <string name="chat_send_cd">Invia</string>
+    <string name="chat_error_timeout">La richiesta ha impiegato troppo tempo ed è scaduta. Riprova.</string>
+    <string name="chat_error_network">Al momento non riesco a raggiungere il server. Controlla la tua connessione internet e riprova.</string>
+    <string name="chat_error_server">Scusa, qualcosa è andato storto da parte mia. Riprova tra un momento.</string>
     <string name="chat_initial_message">Ciao! Sono Nova, il tuo coach personale per la salute basato su IA. Sono qui per aiutarti a raggiungere i tuoi obiettivi — nutrizione, fitness, peso e altro. Come posso aiutarti oggi?</string>
     <string name="chat_quick_dinner">Cosa dovrei mangiare a cena?</string>
     <string name="chat_quick_on_track">Sono in linea con gli obiettivi oggi?</string>

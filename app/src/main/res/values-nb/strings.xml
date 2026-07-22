@@ -77,6 +77,9 @@
     <string name="chat_menu_profile">Profil</string>
     <string name="chat_menu_clear">Tøm chat</string>
     <string name="chat_send_cd">Send</string>
+    <string name="chat_error_timeout">Forespørselen tok for lang tid og ble avbrutt. Prøv igjen.</string>
+    <string name="chat_error_network">Jeg får ikke kontakt med serveren akkurat nå. Sjekk internettforbindelsen din og prøv igjen.</string>
+    <string name="chat_error_server">Beklager, noe gikk galt hos meg. Prøv igjen om et øyeblikk.</string>
     <string name="chat_initial_message">Hei! Jeg er Nova, din personlige AI-helsecoach. Jeg er her for å hjelpe deg å nå målene dine – ernæring, trening, vekt og mer. Hva kan jeg hjelpe deg med i dag?</string>
     <string name="chat_quick_dinner">Hva bør jeg spise til middag?</string>
     <string name="chat_quick_on_track">Er jeg på rett spor i dag?</string>

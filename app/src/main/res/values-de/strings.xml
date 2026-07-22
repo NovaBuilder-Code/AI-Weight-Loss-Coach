@@ -53,6 +53,9 @@
     <string name="chat_menu_profile">Profil</string>
     <string name="chat_menu_clear">Chat löschen</string>
     <string name="chat_send_cd">Senden</string>
+    <string name="chat_error_timeout">Die Anfrage hat zu lange gedauert und wurde abgebrochen. Bitte versuche es erneut.</string>
+    <string name="chat_error_network">Ich kann den Server gerade nicht erreichen. Bitte überprüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="chat_error_server">Entschuldigung, bei mir ist etwas schiefgelaufen. Bitte versuche es gleich noch einmal.</string>
     <string name="chat_initial_message">Hallo! Ich bin Nova, dein persönlicher KI-Gesundheits-Coach. Ich bin hier, um dir zu helfen, deine Ziele zu erreichen — Ernährung, Fitness, Gewicht und mehr. Womit kann ich dir heute helfen?</string>
     <string name="chat_quick_dinner">Was soll ich zum Abendessen essen?</string>
     <string name="chat_quick_on_track">Bin ich heute auf Kurs?</string>

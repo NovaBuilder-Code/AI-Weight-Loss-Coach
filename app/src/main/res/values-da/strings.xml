@@ -53,6 +53,9 @@
     <string name="chat_menu_profile">Profil</string>
     <string name="chat_menu_clear">Ryd chat</string>
     <string name="chat_send_cd">Send</string>
+    <string name="chat_error_timeout">Anmodningen tog for lang tid og blev afbrudt. Prøv igen.</string>
+    <string name="chat_error_network">Jeg kan ikke få kontakt med serveren lige nu. Tjek din internetforbindelse, og prøv igen.</string>
+    <string name="chat_error_server">Beklager, noget gik galt hos mig. Prøv igen om et øjeblik.</string>
     <string name="chat_initial_message">Hej! Jeg er Nova, din personlige AI-sundhedscoach. Jeg er her for at hjælpe dig med at nå dine mål — ernæring, fitness, vægt og mere. Hvad kan jeg hjælpe dig med i dag?</string>
     <string name="chat_quick_dinner">Hvad skal jeg spise til aftensmad?</string>
     <string name="chat_quick_on_track">Er jeg på rette spor i dag?</string>

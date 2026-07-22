@@ -26,6 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.ChatResult
+import com.novaai.calorietracker.data.NovaChatService
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.NovaAvatar
 import com.novaai.calorietracker.ui.theme.*
@@ -58,34 +60,37 @@ fun ChatScreen(navController: NavController) {
         stringResource(R.string.chat_quick_calories)
     )
 
-    val aiResponses = listOf(
-        stringResource(R.string.chat_ai_response_1),
-        stringResource(R.string.chat_ai_response_2),
-        stringResource(R.string.chat_ai_response_3),
-        stringResource(R.string.chat_ai_response_4),
-        stringResource(R.string.chat_ai_response_5)
-    )
+    val errorTimeout = stringResource(R.string.chat_error_timeout)
+    val errorNetwork = stringResource(R.string.chat_error_network)
+    val errorServer = stringResource(R.string.chat_error_server)
 
     var messages by remember { mutableStateOf(initialMessages) }
     var inputText by remember { mutableStateOf("") }
-    var isTyping by remember { mutableStateOf(false) }
+    var pendingReplies by remember { mutableIntStateOf(0) }
+    val isTyping = pendingReplies > 0
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var messageIdCounter by remember { mutableIntStateOf(1) }
 
     fun sendMessage(text: String) {
         if (text.isBlank()) return
-        val userMsg = ChatMessage(messageIdCounter++, text, true, "Now")
+        val userMsg = ChatMessage(messageIdCounter++, text.trim(), true, "Now")
         messages = messages + userMsg
         inputText = ""
-        isTyping = true
+        pendingReplies++
 
         scope.launch {
             listState.animateScrollToItem(messages.size)
-            delay(1200)
-            val responseText = aiResponses.random()
+            // Send through the Cloudflare Worker backend (which holds the
+            // OpenAI key server-side — no keys ship inside the app).
+            val responseText = when (val result = NovaChatService.sendMessage(userMsg.text)) {
+                is ChatResult.Success -> result.reply
+                ChatResult.Timeout -> errorTimeout
+                ChatResult.NetworkError -> errorNetwork
+                ChatResult.ServerError -> errorServer
+            }
             messages = messages + ChatMessage(messageIdCounter++, responseText, false, "Now")
-            isTyping = false
+            pendingReplies--
             delay(100)
             listState.animateScrollToItem(messages.size)
         }
@@ -100,7 +105,6 @@ fun ChatScreen(navController: NavController) {
             navController = navController,
             onClearChat = {
                 messages = initialMessages
-                isTyping = false
             }
         )
 

@@ -53,6 +53,9 @@
     <string name="chat_menu_profile">Perfil</string>
     <string name="chat_menu_clear">Limpar conversa</string>
     <string name="chat_send_cd">Enviar</string>
+    <string name="chat_error_timeout">A solicitação demorou demais e o tempo esgotou. Tente novamente.</string>
+    <string name="chat_error_network">Não consigo acessar o servidor agora. Verifique sua conexão com a internet e tente novamente.</string>
+    <string name="chat_error_server">Desculpe, algo deu errado do meu lado. Tente novamente em instantes.</string>
     <string name="chat_initial_message">Olá! Sou a Nova, sua coach pessoal de saúde com IA. Estou aqui para te ajudar a alcançar seus objetivos — nutrição, fitness, peso e muito mais. Como posso te ajudar hoje?</string>
     <string name="chat_quick_dinner">O que devo comer no jantar?</string>
     <string name="chat_quick_on_track">Estou no caminho certo hoje?</string>
