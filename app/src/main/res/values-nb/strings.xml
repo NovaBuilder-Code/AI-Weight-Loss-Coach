@@ -411,4 +411,20 @@
     <string name="about_version_value">1.0.0</string>
     <string name="about_description">Nova AI er din personlige helsecoach — kalorisporing, vektmål, gåing, hydrering, søvn og daglige rekker, alt veiledet av Nova.</string>
     <string name="about_made">Laget med ❤️ for helsereisen din</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Steg %1$d av %2$d</string>
+    <string name="profile_setup_name_title">Hva heter du?</string>
+    <string name="profile_setup_name_sub">Nova bruker navnet ditt for å gjøre coachingen personlig.</string>
+    <string name="profile_setup_name_hint">Navnet ditt</string>
+    <string name="profile_setup_age_title">Hvor gammel er du?</string>
+    <string name="profile_setup_age_sub">Alderen din hjelper Nova med å beregne ditt daglige kaloribehov.</string>
+    <string name="profile_setup_age_hint">Alderen din</string>
+    <string name="profile_setup_age_invalid">Oppgi en alder mellom %1$d og %2$d.</string>
+    <string name="profile_setup_sex_title">Hva er kjønnet ditt?</string>
+    <string name="profile_setup_sex_sub">Brukes kun til kaloriberegninger.</string>
+    <string name="profile_setup_sex_male">Mann</string>
+    <string name="profile_setup_sex_female">Kvinne</string>
+    <string name="profile_setup_continue">Fortsett</string>
+    <string name="profile_setup_finish">Fullfør</string>
 </resources>

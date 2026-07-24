@@ -220,4 +220,20 @@
     <string name="placeholder_water_sub">Log hvert glas og hold styr på dit daglige hydrerings­mål. Nova AI minder dig om at drikke mere vand, når du er bagud.</string>
     <string name="placeholder_sleep_title">Søvnsporing</string>
     <string name="placeholder_sleep_sub">Spor din søvnlængde og -kvalitet. God søvn er afgørende for vægttab — Nova AI tager din hvile med i betragtning i den daglige sundhedscoaching.</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Trin %1$d af %2$d</string>
+    <string name="profile_setup_name_title">Hvad hedder du?</string>
+    <string name="profile_setup_name_sub">Nova bruger dit navn til at gøre coachingen personlig.</string>
+    <string name="profile_setup_name_hint">Dit navn</string>
+    <string name="profile_setup_age_title">Hvor gammel er du?</string>
+    <string name="profile_setup_age_sub">Din alder hjælper Nova med at beregne dit daglige kaloriebehov.</string>
+    <string name="profile_setup_age_hint">Din alder</string>
+    <string name="profile_setup_age_invalid">Angiv en alder mellem %1$d og %2$d.</string>
+    <string name="profile_setup_sex_title">Hvad er dit køn?</string>
+    <string name="profile_setup_sex_sub">Bruges kun til kalorieberegninger.</string>
+    <string name="profile_setup_sex_male">Mand</string>
+    <string name="profile_setup_sex_female">Kvinde</string>
+    <string name="profile_setup_continue">Fortsæt</string>
+    <string name="profile_setup_finish">Afslut</string>
 </resources>

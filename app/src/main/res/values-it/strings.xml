@@ -220,4 +220,20 @@
     <string name="placeholder_water_sub">Registra ogni bicchiere e tieni d\'occhio il tuo obiettivo di idratazione giornaliero. Nova AI ti ricorderà di bere più acqua quando sei indietro.</string>
     <string name="placeholder_sleep_title">Monitoraggio del sonno</string>
     <string name="placeholder_sleep_sub">Monitora la durata e la qualità del tuo sonno. Un buon riposo è essenziale per perdere peso — Nova AI considera il tuo riposo nel coaching quotidiano per la salute.</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Passo %1$d di %2$d</string>
+    <string name="profile_setup_name_title">Come ti chiami?</string>
+    <string name="profile_setup_name_sub">Nova usa il tuo nome per personalizzare il coaching.</string>
+    <string name="profile_setup_name_hint">Il tuo nome</string>
+    <string name="profile_setup_age_title">Quanti anni hai?</string>
+    <string name="profile_setup_age_sub">La tua età aiuta Nova a calcolare il tuo fabbisogno calorico giornaliero.</string>
+    <string name="profile_setup_age_hint">La tua età</string>
+    <string name="profile_setup_age_invalid">Inserisci un\'età tra %1$d e %2$d.</string>
+    <string name="profile_setup_sex_title">Qual è il tuo sesso?</string>
+    <string name="profile_setup_sex_sub">Usato solo per i calcoli delle calorie.</string>
+    <string name="profile_setup_sex_male">Uomo</string>
+    <string name="profile_setup_sex_female">Donna</string>
+    <string name="profile_setup_continue">Continua</string>
+    <string name="profile_setup_finish">Fine</string>
 </resources>

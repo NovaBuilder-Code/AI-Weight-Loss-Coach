@@ -12,6 +12,7 @@ import com.novaai.calorietracker.R
 sealed class Screen(val route: String) {
     // — First launch —
     data object Onboarding   : Screen("onboarding")
+    data object ProfileSetup : Screen("profile_setup")
 
     // — Bottom-nav destinations —
     data object Home         : Screen("home")

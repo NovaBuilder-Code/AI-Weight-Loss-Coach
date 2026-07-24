@@ -10,6 +10,7 @@ import com.novaai.calorietracker.ui.screens.chat.ChatScreen
 import com.novaai.calorietracker.ui.screens.foodscan.FoodScanScreen
 import com.novaai.calorietracker.ui.screens.home.HomeScreen
 import com.novaai.calorietracker.ui.screens.meals.MealSuggestionsScreen
+import com.novaai.calorietracker.ui.screens.onboarding.ProfileSetupScreen
 import com.novaai.calorietracker.ui.screens.onboarding.WelcomeScreen
 import com.novaai.calorietracker.ui.screens.profile.AboutScreen
 import com.novaai.calorietracker.ui.screens.profile.GoalsScreen
@@ -35,6 +36,9 @@ fun NovaNavGraph(navController: NavHostController) {
     ) {
         composable(Screen.Onboarding.route) {
             WelcomeScreen(navController = navController)
+        }
+        composable(Screen.ProfileSetup.route) {
+            ProfileSetupScreen(navController = navController)
         }
 
         // Bottom nav

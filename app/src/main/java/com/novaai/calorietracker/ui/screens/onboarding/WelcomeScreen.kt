@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.NovaPrimaryButton
 import com.novaai.calorietracker.ui.theme.*
@@ -43,6 +45,7 @@ private data class OnboardingFeature(
 
 @Composable
 fun WelcomeScreen(navController: NavController) {
+    val context = LocalContext.current
     val features = listOf(
         OnboardingFeature(Icons.Default.SmartToy, R.string.onboarding_feature_ai_coach, Screen.AICoach.route),
         OnboardingFeature(Icons.Default.LocalFireDepartment, R.string.onboarding_feature_calorie_tracking, Screen.Calories.route),
@@ -121,8 +124,16 @@ fun WelcomeScreen(navController: NavController) {
             NovaPrimaryButton(
                 text = stringResource(R.string.onboarding_cta),
                 onClick = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    // First launch: collect the required profile answers before Home.
+                    val profile = UserProfileStore.load(context)
+                    val setupNeeded =
+                        profile.name.isNullOrBlank() || profile.age == null || profile.sex == null
+                    if (setupNeeded) {
+                        navController.navigate(Screen.ProfileSetup.route)
+                    } else {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
                     }
                 }
             )

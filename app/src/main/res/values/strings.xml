@@ -415,4 +415,20 @@
     <string name="about_version_value">1.0.0</string>
     <string name="about_description">Nova AI is your personal health coach — calorie tracking, weight goals, walking, hydration, sleep and daily streaks, all guided by Nova.</string>
     <string name="about_made">Built with ❤️ for your health journey</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Step %1$d of %2$d</string>
+    <string name="profile_setup_name_title">What\'s your name?</string>
+    <string name="profile_setup_name_sub">Nova uses your name to make your coaching personal.</string>
+    <string name="profile_setup_name_hint">Your name</string>
+    <string name="profile_setup_age_title">How old are you?</string>
+    <string name="profile_setup_age_sub">Your age helps Nova calculate your daily calorie needs.</string>
+    <string name="profile_setup_age_hint">Your age</string>
+    <string name="profile_setup_age_invalid">Enter an age between %1$d and %2$d.</string>
+    <string name="profile_setup_sex_title">What\'s your sex?</string>
+    <string name="profile_setup_sex_sub">Used only for calorie calculations.</string>
+    <string name="profile_setup_sex_male">Male</string>
+    <string name="profile_setup_sex_female">Female</string>
+    <string name="profile_setup_continue">Continue</string>
+    <string name="profile_setup_finish">Finish</string>
 </resources>

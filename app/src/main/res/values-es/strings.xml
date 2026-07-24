@@ -220,4 +220,20 @@
     <string name="placeholder_water_sub">Registra cada vaso y mantén el control de tu objetivo diario de hidratación. Nova AI te recordará que bebas más agua cuando te quedes atrás.</string>
     <string name="placeholder_sleep_title">Control del sueño</string>
     <string name="placeholder_sleep_sub">Controla la duración y calidad de tu sueño. Dormir bien es fundamental para perder peso — Nova AI tiene en cuenta tu descanso en tu coaching de salud diario.</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Paso %1$d de %2$d</string>
+    <string name="profile_setup_name_title">¿Cómo te llamas?</string>
+    <string name="profile_setup_name_sub">Nova usa tu nombre para personalizar tu coaching.</string>
+    <string name="profile_setup_name_hint">Tu nombre</string>
+    <string name="profile_setup_age_title">¿Cuántos años tienes?</string>
+    <string name="profile_setup_age_sub">Tu edad ayuda a Nova a calcular tus necesidades calóricas diarias.</string>
+    <string name="profile_setup_age_hint">Tu edad</string>
+    <string name="profile_setup_age_invalid">Introduce una edad entre %1$d y %2$d.</string>
+    <string name="profile_setup_sex_title">¿Cuál es tu sexo?</string>
+    <string name="profile_setup_sex_sub">Se usa solo para los cálculos de calorías.</string>
+    <string name="profile_setup_sex_male">Hombre</string>
+    <string name="profile_setup_sex_female">Mujer</string>
+    <string name="profile_setup_continue">Continuar</string>
+    <string name="profile_setup_finish">Finalizar</string>
 </resources>

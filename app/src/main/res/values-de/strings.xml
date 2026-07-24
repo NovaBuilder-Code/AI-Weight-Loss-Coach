@@ -220,4 +220,20 @@
     <string name="placeholder_water_sub">Erfasse jedes Glas und behalte dein tägliches Hydrationsziel im Blick. Nova AI erinnert dich daran, mehr Wasser zu trinken, wenn du zurückfällst.</string>
     <string name="placeholder_sleep_title">Schlaftracker</string>
     <string name="placeholder_sleep_sub">Verfolge deine Schlafdauer und -qualität. Guter Schlaf ist entscheidend für den Gewichtsverlust — Nova AI berücksichtigt deine Erholung in deinem täglichen Gesundheitscoaching.</string>
+
+    <!-- Profile setup (onboarding questions) -->
+    <string name="profile_setup_step">Schritt %1$d von %2$d</string>
+    <string name="profile_setup_name_title">Wie heißt du?</string>
+    <string name="profile_setup_name_sub">Nova nutzt deinen Namen für ein persönliches Coaching.</string>
+    <string name="profile_setup_name_hint">Dein Name</string>
+    <string name="profile_setup_age_title">Wie alt bist du?</string>
+    <string name="profile_setup_age_sub">Dein Alter hilft Nova, deinen täglichen Kalorienbedarf zu berechnen.</string>
+    <string name="profile_setup_age_hint">Dein Alter</string>
+    <string name="profile_setup_age_invalid">Gib ein Alter zwischen %1$d und %2$d ein.</string>
+    <string name="profile_setup_sex_title">Was ist dein Geschlecht?</string>
+    <string name="profile_setup_sex_sub">Wird nur für Kalorienberechnungen verwendet.</string>
+    <string name="profile_setup_sex_male">Männlich</string>
+    <string name="profile_setup_sex_female">Weiblich</string>
+    <string name="profile_setup_continue">Weiter</string>
+    <string name="profile_setup_finish">Fertig</string>
 </resources>
