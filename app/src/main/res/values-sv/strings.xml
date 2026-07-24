@@ -407,4 +407,21 @@
     <string name="profile_setup_sex_female">Kvinna</string>
     <string name="profile_setup_continue">Fortsätt</string>
     <string name="profile_setup_finish">Slutför</string>
+    <string name="profile_setup_units_title">Vilka enheter föredrar du?</string>
+    <string name="profile_setup_units_sub">Används för dina längd- och viktuppgifter.</string>
+    <string name="profile_setup_units_metric">Metriskt (cm, kg)</string>
+    <string name="profile_setup_units_imperial">Imperial (ft/in, lb)</string>
+    <string name="profile_setup_height_title">Hur lång är du?</string>
+    <string name="profile_setup_height_sub">Din längd ingår i din kaloriberäkning.</string>
+    <string name="profile_setup_height_hint_cm">Längd (cm)</string>
+    <string name="profile_setup_height_hint_ft">ft</string>
+    <string name="profile_setup_height_hint_in">in</string>
+    <string name="profile_setup_height_invalid">Ange en giltig längd.</string>
+    <string name="profile_setup_weight_title">Vad väger du just nu?</string>
+    <string name="profile_setup_weight_sub">Din startpunkt för att följa framstegen.</string>
+    <string name="profile_setup_weight_hint_kg">Vikt (kg)</string>
+    <string name="profile_setup_weight_hint_lb">Vikt (lb)</string>
+    <string name="profile_setup_weight_invalid">Ange en giltig vikt.</string>
+    <string name="profile_setup_goal_weight_title">Vad är din målvikt?</string>
+    <string name="profile_setup_goal_weight_sub">Nova hjälper dig att nå dit steg för steg.</string>
 </resources>

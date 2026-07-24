@@ -127,7 +127,9 @@ fun WelcomeScreen(navController: NavController) {
                     // First launch: collect the required profile answers before Home.
                     val profile = UserProfileStore.load(context)
                     val setupNeeded =
-                        profile.name.isNullOrBlank() || profile.age == null || profile.sex == null
+                        profile.name.isNullOrBlank() || profile.age == null || profile.sex == null ||
+                            profile.units == null || profile.heightCm == null ||
+                            profile.currentWeightKg == null || profile.goalWeightKg == null
                     if (setupNeeded) {
                         navController.navigate(Screen.ProfileSetup.route)
                     } else {

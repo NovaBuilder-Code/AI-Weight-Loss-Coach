@@ -431,4 +431,21 @@
     <string name="profile_setup_sex_female">Female</string>
     <string name="profile_setup_continue">Continue</string>
     <string name="profile_setup_finish">Finish</string>
+    <string name="profile_setup_units_title">Which units do you prefer?</string>
+    <string name="profile_setup_units_sub">Used for your height and weight entries.</string>
+    <string name="profile_setup_units_metric">Metric (cm, kg)</string>
+    <string name="profile_setup_units_imperial">Imperial (ft/in, lb)</string>
+    <string name="profile_setup_height_title">How tall are you?</string>
+    <string name="profile_setup_height_sub">Your height is part of your calorie calculation.</string>
+    <string name="profile_setup_height_hint_cm">Height (cm)</string>
+    <string name="profile_setup_height_hint_ft">ft</string>
+    <string name="profile_setup_height_hint_in">in</string>
+    <string name="profile_setup_height_invalid">Enter a valid height.</string>
+    <string name="profile_setup_weight_title">What\'s your current weight?</string>
+    <string name="profile_setup_weight_sub">Your starting point for tracking progress.</string>
+    <string name="profile_setup_weight_hint_kg">Weight (kg)</string>
+    <string name="profile_setup_weight_hint_lb">Weight (lb)</string>
+    <string name="profile_setup_weight_invalid">Enter a valid weight.</string>
+    <string name="profile_setup_goal_weight_title">What\'s your goal weight?</string>
+    <string name="profile_setup_goal_weight_sub">Nova will help you get there step by step.</string>
 </resources>

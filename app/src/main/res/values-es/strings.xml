@@ -236,4 +236,21 @@
     <string name="profile_setup_sex_female">Mujer</string>
     <string name="profile_setup_continue">Continuar</string>
     <string name="profile_setup_finish">Finalizar</string>
+    <string name="profile_setup_units_title">¿Qué unidades prefieres?</string>
+    <string name="profile_setup_units_sub">Se usan para tu estatura y tu peso.</string>
+    <string name="profile_setup_units_metric">Métrico (cm, kg)</string>
+    <string name="profile_setup_units_imperial">Imperial (ft/in, lb)</string>
+    <string name="profile_setup_height_title">¿Cuánto mides?</string>
+    <string name="profile_setup_height_sub">Tu estatura forma parte del cálculo de calorías.</string>
+    <string name="profile_setup_height_hint_cm">Estatura (cm)</string>
+    <string name="profile_setup_height_hint_ft">ft</string>
+    <string name="profile_setup_height_hint_in">in</string>
+    <string name="profile_setup_height_invalid">Introduce una estatura válida.</string>
+    <string name="profile_setup_weight_title">¿Cuál es tu peso actual?</string>
+    <string name="profile_setup_weight_sub">Tu punto de partida para seguir el progreso.</string>
+    <string name="profile_setup_weight_hint_kg">Peso (kg)</string>
+    <string name="profile_setup_weight_hint_lb">Peso (lb)</string>
+    <string name="profile_setup_weight_invalid">Introduce un peso válido.</string>
+    <string name="profile_setup_goal_weight_title">¿Cuál es tu peso objetivo?</string>
+    <string name="profile_setup_goal_weight_sub">Nova te ayudará a lograrlo paso a paso.</string>
 </resources>

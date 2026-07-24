@@ -236,4 +236,21 @@
     <string name="profile_setup_sex_female">Weiblich</string>
     <string name="profile_setup_continue">Weiter</string>
     <string name="profile_setup_finish">Fertig</string>
+    <string name="profile_setup_units_title">Welche Einheiten bevorzugst du?</string>
+    <string name="profile_setup_units_sub">Wird für deine Größen- und Gewichtsangaben verwendet.</string>
+    <string name="profile_setup_units_metric">Metrisch (cm, kg)</string>
+    <string name="profile_setup_units_imperial">Imperial (ft/in, lb)</string>
+    <string name="profile_setup_height_title">Wie groß bist du?</string>
+    <string name="profile_setup_height_sub">Deine Größe fließt in deine Kalorienberechnung ein.</string>
+    <string name="profile_setup_height_hint_cm">Größe (cm)</string>
+    <string name="profile_setup_height_hint_ft">ft</string>
+    <string name="profile_setup_height_hint_in">in</string>
+    <string name="profile_setup_height_invalid">Gib eine gültige Größe ein.</string>
+    <string name="profile_setup_weight_title">Wie viel wiegst du aktuell?</string>
+    <string name="profile_setup_weight_sub">Dein Ausgangspunkt, um Fortschritte zu verfolgen.</string>
+    <string name="profile_setup_weight_hint_kg">Gewicht (kg)</string>
+    <string name="profile_setup_weight_hint_lb">Gewicht (lb)</string>
+    <string name="profile_setup_weight_invalid">Gib ein gültiges Gewicht ein.</string>
+    <string name="profile_setup_goal_weight_title">Was ist dein Zielgewicht?</string>
+    <string name="profile_setup_goal_weight_sub">Nova hilft dir, es Schritt für Schritt zu erreichen.</string>
 </resources>
