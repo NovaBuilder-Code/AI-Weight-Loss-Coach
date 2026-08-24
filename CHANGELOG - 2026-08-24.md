@@ -130,3 +130,31 @@ c0cc9b1 (main goal, activity level, daily step goal steps; 10,000 default;
   through the UI; profile verified byte-identical afterwards (all 10 fields).
 - Force-close + reopen: onboarding not repeated, profile persists.
 - Build green; 22 JVM unit tests + 12 instrumented tests pass.
+
+---
+
+# Persistent install fix — AGP connected tests uninstalled the app. Commit (see git log).
+
+## Root cause (proven on device)
+AGP 8.5.2's connected test task (connectedDebugAndroidTest) runs its
+UninstallTask internally — the AGP source itself says "Uninstall task is
+always run" — and silently uninstalls BOTH com.novaai.calorietracker and
+com.novaai.calorietracker.test when the run finishes. Every previous test
+session therefore left the phone without the app (the 12B2-era and 12D-era
+disappearances; Play Protect was suspected but is NOT the cause). Verified
+empirically: after a test run, pm list packages showed no novaai packages;
+no project script calls db uninstall or pm clear.
+
+## Fix (smallest safe change)
+- pp/build.gradle.kts — new einstallDebugApkAfterTests Exec task that
+  runs db install -r on the built debug APK, wired as inalizedBy on
+  connectedDebugAndroidTest / connectedAndroidTest. The app is therefore
+  always reinstalled immediately after any connected test run and stays
+  installed like a normal app. Data survives via llowBackup (Android Auto
+  Backup restored the saved profile on every reinstall, verified on device).
+
+## Verified on SM-A715F
+- After a full connectedDebugAndroidTest run: package still installed
+  (pm path OK), launcher activity resolves, "Nova AI" icon present in the
+  app drawer, app opens normally, saved profile data present.
+- No data cleared, no pm clear, no manual uninstall; tests all green.

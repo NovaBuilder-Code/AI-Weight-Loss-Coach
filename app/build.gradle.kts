@@ -71,3 +71,29 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.kotlinx.coroutines.test)
 }
+
+// AGP's connected test task ("Uninstall task is always run") uninstalls the
+// app + test APK when the run finishes, which made the sideloaded app vanish
+// from the phone after every test session. Reinstall the debug APK right
+// after any connected test run so the app stays installed like a normal app.
+val adbExecutable = android.sdkDirectory.resolve("platform-tools").resolve(
+    if (File.separatorChar == '\\') "adb.exe" else "adb"
+).absolutePath
+
+val reinstallDebugApkAfterTests = tasks.register<Exec>("reinstallDebugApkAfterTests") {
+    group = "verification"
+    description = "Reinstalls the debug APK with adb install -r after connected tests."
+    val apk = layout.buildDirectory.file("outputs/apk/debug/app-debug.apk")
+    inputs.file(apk)
+    val serial = System.getenv("ANDROID_SERIAL")
+    val cmd = mutableListOf(adbExecutable)
+    if (!serial.isNullOrBlank()) {
+        cmd.add("-s")
+        cmd.add(serial)
+    }
+    cmd.addAll(listOf("install", "-r", apk.get().asFile.absolutePath))
+    commandLine(cmd)
+}
+
+tasks.matching { it.name == "connectedDebugAndroidTest" || it.name == "connectedAndroidTest" }
+    .configureEach { finalizedBy(reinstallDebugApkAfterTests) }
