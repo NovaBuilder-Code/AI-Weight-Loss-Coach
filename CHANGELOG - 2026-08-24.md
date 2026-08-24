@@ -75,3 +75,31 @@ launcher configuration.
   UI showed "/ 8,000" (proves it reads the profile, not a fixed default), then restored.
 - Build green; 22 JVM unit tests (13 new + 9 existing) and 12 instrumented
   tests pass.
+
+---
+
+# Task 12D — Real-device verification & polish. Commit (see git log).
+
+## What was verified on SM-A715F (no code changes required)
+- Home shows the personalized target "/ 1814 kcal" (female, 34y, 175.26 cm,
+  69.853 kg, moderately active, lose weight: BMR 1462.9 → TDEE 2267.5 → 1814).
+- Calorie Tracker shows the exact same "/ 1814 kcal".
+- Walking/Steps shows the saved daily step goal "/ 10,000".
+- Force-close + reopen: both values persist; onboarding is not shown again
+  (CTA goes straight to Home); all 10 profile fields intact.
+- No crashes (0 FATAL EXCEPTION), no ANRs, no app-level log errors. Only
+  benign system noise (Samsung Play Store existence check for the sideloaded
+  debug package).
+- Hardcoded-value sweep of Home / Calorie Tracker / Walking: no leftover
+  2000/10000. The only remaining "2000" is GoalsScreen's pre-existing
+  user-editable goals feature (out of scope, untouched).
+- Profile survived the fresh install via Android Auto Backup (allowBackup),
+  confirming no data loss on reinstall.
+
+## Files changed
+- None (verification-only task; no bugs found).
+- CHANGELOG - 2026-08-24.md — this section.
+
+## Tests
+- 22 JVM unit tests green (13 calorie + 6 conversion + 3 onboarding);
+  assembleDebug builds.
