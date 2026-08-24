@@ -133,6 +133,13 @@
     <string name="profile_stat_streak">Stribe</string>
     <string name="profile_stat_lost">Tabt</string>
     <string name="profile_stat_days">dage</string>
+    <string name="profile_stat_age">Alder</string>
+    <string name="profile_stat_height">Højde</string>
+    <string name="profile_stat_weight">Vægt</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_lb">lb</string>
+    <string name="profile_name_placeholder">Nova-bruger</string>
+    <string name="profile_daily_step_goal">Dagligt skridtmål: %1$s %2$s</string>
     <string name="profile_signout_dialog_title">Log ud</string>
     <string name="profile_signout_dialog_message">Er du sikker på, at du vil logge ud? Dine data er gemt på din konto.</string>
     <string name="subscription_title">Nova Premium</string>

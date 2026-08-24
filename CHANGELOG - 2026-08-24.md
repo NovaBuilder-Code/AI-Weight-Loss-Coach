@@ -158,3 +158,48 @@ no project script calls db uninstall or pm clear.
   (pm path OK), launcher activity resolves, "Nova AI" icon present in the
   app drawer, app opens normally, saved profile data present.
 - No data cleared, no pm clear, no manual uninstall; tests all green.
+
+---
+
+# Task 13A — Profile screen connected to saved UserProfile. Commit (see git log).
+
+## What changed
+The Profile screen showed demo values ("Alex Johnson", "alex@email.com",
+avatar "A", fake stats "28 days active / 5-day streak / 5.8 kg lost").
+Now it shows the real saved onboarding profile from UserProfileStore:
+- Avatar initial + name from the saved name (fallback "Nova User").
+- Subtitle "Lose weight · Moderately active" (saved main goal + activity
+  level, localized labels).
+- Line "Daily step goal: 10,000 steps" from the saved goal.
+- Stats row replaced with Age / Height / Weight chips using real values,
+  units-aware via the saved units (metric cm/kg, imperial ft/in/lb with
+  UnitConversion).
+No redesign: same layout, same components. Onboarding, calorie target and
+step-goal logic untouched. No Room, no new APIs.
+
+## New files
+- pp/src/main/java/com/novaai/calorietracker/data/ProfileDisplay.kt —
+  pure formatting helpers (formatDecimal, weightValue, heightValue,
+  stepGoalText).
+- pp/src/test/java/com/novaai/calorietracker/data/ProfileDisplayTest.kt —
+  4 JVM tests (decimal formatting, metric/imperial weight and height
+  values, step-goal grouping).
+
+## Modified files
+- ui/screens/profile/ProfileScreen.kt — real profile data in avatar +
+  stats row.
+- pp/src/main/res/values*/strings.xml (all 9 locales) — 7 new strings
+  (profile_stat_age/height/weight, unit_cm, unit_lb, profile_name_placeholder,
+  profile_daily_step_goal).
+
+## Tests / build
+- assembleDebug green; 26 JVM unit tests pass (4 new + 22 existing);
+  12 instrumented tests green on SM-A715F.
+- App remained installed after the connected test run (persistent-install
+  fix from the previous commit holds).
+
+## Verified on SM-A715F
+- Profile screen shows: "A", "Alex", "Lose weight · Moderately active",
+  "Daily step goal: 10,000 steps", Age 34, Height "5 ft 9 in", Weight
+  "154 lb" — all matching the saved profile (imperial units). No demo
+  values remain.

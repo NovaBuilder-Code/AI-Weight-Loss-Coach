@@ -133,6 +133,13 @@
     <string name="profile_stat_streak">Racha</string>
     <string name="profile_stat_lost">Perdido</string>
     <string name="profile_stat_days">días</string>
+    <string name="profile_stat_age">Edad</string>
+    <string name="profile_stat_height">Estatura</string>
+    <string name="profile_stat_weight">Peso</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_lb">lb</string>
+    <string name="profile_name_placeholder">Usuario Nova</string>
+    <string name="profile_daily_step_goal">Meta diaria de pasos: %1$s %2$s</string>
     <string name="profile_signout_dialog_title">Cerrar sesión</string>
     <string name="profile_signout_dialog_message">¿Estás seguro de que quieres cerrar sesión? Tus datos están guardados en tu cuenta.</string>
     <string name="subscription_title">Nova Premium</string>

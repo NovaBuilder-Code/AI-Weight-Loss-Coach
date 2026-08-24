@@ -167,6 +167,13 @@
     <string name="profile_stat_streak">Streak</string>
     <string name="profile_stat_lost">Lost</string>
     <string name="profile_stat_days">days</string>
+    <string name="profile_stat_age">Age</string>
+    <string name="profile_stat_height">Height</string>
+    <string name="profile_stat_weight">Weight</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_lb">lb</string>
+    <string name="profile_name_placeholder">Nova User</string>
+    <string name="profile_daily_step_goal">Daily step goal: %1$s %2$s</string>
     <string name="profile_signout_dialog_title">Sign Out</string>
     <string name="profile_signout_dialog_message">Are you sure you want to sign out? Your data is saved to your account.</string>
 

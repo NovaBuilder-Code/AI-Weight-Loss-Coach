@@ -165,6 +165,13 @@
     <string name="profile_stat_streak">Rekke</string>
     <string name="profile_stat_lost">Tapt</string>
     <string name="profile_stat_days">dager</string>
+    <string name="profile_stat_age">Alder</string>
+    <string name="profile_stat_height">Høyde</string>
+    <string name="profile_stat_weight">Vekt</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_lb">lb</string>
+    <string name="profile_name_placeholder">Nova-bruker</string>
+    <string name="profile_daily_step_goal">Daglig skrittmål: %1$s %2$s</string>
     <string name="profile_signout_dialog_title">Logg ut</string>
     <string name="profile_signout_dialog_message">Er du sikker på at du vil logge ut? Dataene dine er lagret på kontoen din.</string>
 

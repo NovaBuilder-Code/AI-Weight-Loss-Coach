@@ -14,18 +14,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.ActivityLevel
+import com.novaai.calorietracker.data.MainGoal
+import com.novaai.calorietracker.data.MeasurementUnits
+import com.novaai.calorietracker.data.ProfileDisplay
+import com.novaai.calorietracker.data.UnitConversion
+import com.novaai.calorietracker.data.UserProfile
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 
 @Composable
 fun ProfileScreen(navController: NavController) {
+    val context = LocalContext.current
+    val profile = remember { UserProfileStore.load(context) }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
     val accountItems = listOf(
@@ -67,9 +77,9 @@ fun ProfileScreen(navController: NavController) {
         item {
             NovaTopBar(title = stringResource(R.string.profile_title), onBack = { navController.popBackStack() })
         }
-        item { ProfileAvatar() }
+        item { ProfileAvatar(profile) }
         item { Spacer(Modifier.height(20.dp)) }
-        item { ProfileStatsRow() }
+        item { ProfileStatsRow(profile) }
         item { Spacer(Modifier.height(24.dp)) }
         item {
             SectionHeader(
@@ -136,7 +146,38 @@ fun ProfileScreen(navController: NavController) {
 }
 
 @Composable
-private fun ProfileAvatar() {
+private fun ProfileAvatar(profile: UserProfile) {
+    val name = profile.name?.trim()?.takeIf { it.isNotEmpty() }
+        ?: stringResource(R.string.profile_name_placeholder)
+    val initial = name.take(1).uppercase()
+    val goalLabel = profile.mainGoal?.let {
+        stringResource(
+            when (it) {
+                MainGoal.LOSE_WEIGHT -> R.string.profile_setup_main_goal_lose
+                MainGoal.MAINTAIN_WEIGHT -> R.string.profile_setup_main_goal_maintain
+                MainGoal.GAIN_WEIGHT -> R.string.profile_setup_main_goal_gain
+            }
+        )
+    }
+    val activityLabel = profile.activityLevel?.let {
+        stringResource(
+            when (it) {
+                ActivityLevel.SEDENTARY -> R.string.profile_setup_activity_sedentary
+                ActivityLevel.LIGHTLY_ACTIVE -> R.string.profile_setup_activity_lightly
+                ActivityLevel.MODERATELY_ACTIVE -> R.string.profile_setup_activity_moderately
+                ActivityLevel.VERY_ACTIVE -> R.string.profile_setup_activity_very
+            }
+        )
+    }
+    val subtitle = listOfNotNull(goalLabel, activityLabel).joinToString(" · ")
+    val stepGoalLine = profile.dailyStepGoal?.let {
+        stringResource(
+            R.string.profile_daily_step_goal,
+            ProfileDisplay.stepGoalText(it),
+            stringResource(R.string.steps_unit)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,26 +192,66 @@ private fun ProfileAvatar() {
                 .background(GreenPrimary.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            Text("A", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = GreenPrimary)
+            Text(initial, fontSize = 36.sp, fontWeight = FontWeight.Bold, color = GreenPrimary)
         }
-        Text("Alex Johnson", style = MaterialTheme.typography.headlineSmall)
-        Text("alex@email.com", style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
+        Text(name, style = MaterialTheme.typography.headlineSmall)
+        if (subtitle.isNotEmpty()) {
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
+        }
+        if (stepGoalLine != null) {
+            Text(stepGoalLine, style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
+        }
     }
 }
 
 @Composable
-private fun ProfileStatsRow() {
+private fun ProfileStatsRow(profile: UserProfile) {
+    val imperial = profile.units == MeasurementUnits.IMPERIAL
+
+    val ageValue = profile.age?.toString()
+    val ageChip = ageValue?.let {
+        StatChipData(stringResource(R.string.profile_stat_age), it, "")
+    }
+
+    val heightChip = profile.heightCm?.let { cm ->
+        if (imperial) {
+            val (feet, inches) = UnitConversion.cmToFeetInches(cm)
+            val ft = stringResource(R.string.profile_setup_height_hint_ft)
+            val inch = stringResource(R.string.profile_setup_height_hint_in)
+            StatChipData(stringResource(R.string.profile_stat_height), "$feet $ft $inches $inch", "")
+        } else {
+            StatChipData(stringResource(R.string.profile_stat_height), ProfileDisplay.formatDecimal(cm), stringResource(R.string.unit_cm))
+        }
+    }
+
+    val weightChip = profile.currentWeightKg?.let { kg ->
+        StatChipData(
+            stringResource(R.string.profile_stat_weight),
+            ProfileDisplay.weightValue(kg, imperial),
+            stringResource(if (imperial) R.string.unit_lb else R.string.kg)
+        )
+    }
+
+    val chips = listOfNotNull(ageChip, heightChip, weightChip)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatChip(stringResource(R.string.profile_stat_days_active), "28", modifier = Modifier.weight(1f))
-        StatChip(stringResource(R.string.profile_stat_streak), "5", unit = stringResource(R.string.profile_stat_days), modifier = Modifier.weight(1f), accentColor = WarningAmber)
-        StatChip(stringResource(R.string.profile_stat_lost), "5.8", unit = stringResource(R.string.kg), modifier = Modifier.weight(1f), accentColor = GreenPrimary)
+        chips.forEach { chip ->
+            StatChip(
+                label = chip.label,
+                value = chip.value,
+                unit = chip.unit,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
+
+private data class StatChipData(val label: String, val value: String, val unit: String)
 
 private data class ProfileMenuItemData(
     val icon: ImageVector,

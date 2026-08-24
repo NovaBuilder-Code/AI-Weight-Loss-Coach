@@ -133,6 +133,13 @@
     <string name="profile_stat_streak">Serie</string>
     <string name="profile_stat_lost">Perso</string>
     <string name="profile_stat_days">giorni</string>
+    <string name="profile_stat_age">Età</string>
+    <string name="profile_stat_height">Altezza</string>
+    <string name="profile_stat_weight">Peso</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_lb">lb</string>
+    <string name="profile_name_placeholder">Utente Nova</string>
+    <string name="profile_daily_step_goal">Obiettivo giornaliero di passi: %1$s %2$s</string>
     <string name="profile_signout_dialog_title">Esci</string>
     <string name="profile_signout_dialog_message">Sei sicuro di voler uscire? I tuoi dati sono salvati nel tuo account.</string>
     <string name="subscription_title">Nova Premium</string>
