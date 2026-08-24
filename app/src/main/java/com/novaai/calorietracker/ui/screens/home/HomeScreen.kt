@@ -24,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.CalorieCalculator
 import com.novaai.calorietracker.data.CalorieStore
 import com.novaai.calorietracker.data.StepsStore
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.data.WaterStore
 import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.navigation.Screen
@@ -121,7 +123,10 @@ private fun HomeHeader(navController: NavController) {
 private fun CalorieSummaryCard(navController: NavController) {
     val context = LocalContext.current
     val consumed = remember { CalorieStore.loadTodayMeals(context).sumOf { it.kcal } }
-    val goal = 2000
+    val goal = remember {
+        CalorieCalculator.calculateDailyTarget(UserProfileStore.load(context))
+            ?: CalorieCalculator.DEFAULT_DAILY_TARGET
+    }
     val progress = (consumed.toFloat() / goal).coerceIn(0f, 1f)
 
     NovaGlowCard(

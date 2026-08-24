@@ -23,15 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.CalorieCalculator
 import com.novaai.calorietracker.data.CalorieStore
 import com.novaai.calorietracker.data.StoredMeal
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
 
 private data class MealEntry(val name: String, val type: String, val kcal: Int, val date: String)
 
-private const val DAILY_GOAL = 2000
 private const val BURNED = 340
 
 @Composable
@@ -49,6 +50,10 @@ fun CalorieTrackerScreen(navController: NavController) {
 
     var showAddDialog by remember { mutableStateOf(false) }
     val consumed = meals.sumOf { it.kcal }
+    val dailyGoal = remember {
+        CalorieCalculator.calculateDailyTarget(UserProfileStore.load(context))
+            ?: CalorieCalculator.DEFAULT_DAILY_TARGET
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -68,7 +73,7 @@ fun CalorieTrackerScreen(navController: NavController) {
                 )
             }
         }
-        item { CalorieSummary(consumed) }
+        item { CalorieSummary(consumed, dailyGoal) }
         item { Spacer(Modifier.height(20.dp)) }
         item {
             SectionHeader(
@@ -105,8 +110,8 @@ fun CalorieTrackerScreen(navController: NavController) {
 }
 
 @Composable
-private fun CalorieSummary(consumed: Int) {
-    val progress = (consumed.toFloat() / DAILY_GOAL).coerceIn(0f, 1f)
+private fun CalorieSummary(consumed: Int, dailyGoal: Int) {
+    val progress = (consumed.toFloat() / dailyGoal).coerceIn(0f, 1f)
     NovaGlowCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,7 +128,7 @@ private fun CalorieSummary(consumed: Int) {
                 progress = progress,
                 modifier = Modifier.size(150.dp),
                 strokeWidth = 14f,
-                progressColor = if (consumed > DAILY_GOAL) WarningAmber else GreenPrimary,
+                progressColor = if (consumed > dailyGoal) WarningAmber else GreenPrimary,
                 trackColor = NavyBorder
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -134,7 +139,7 @@ private fun CalorieSummary(consumed: Int) {
                         color = White
                     )
                     Text(
-                        text = stringResource(R.string.home_goal_format, DAILY_GOAL),
+                        text = stringResource(R.string.home_goal_format, dailyGoal),
                         style = MaterialTheme.typography.bodySmall,
                         color = WhiteAlpha60
                     )
@@ -147,7 +152,7 @@ private fun CalorieSummary(consumed: Int) {
             ) {
                 StatChip(
                     label = stringResource(R.string.home_remaining),
-                    value = "${(DAILY_GOAL - consumed).coerceAtLeast(0)}",
+                    value = "${(dailyGoal - consumed).coerceAtLeast(0)}",
                     unit = stringResource(R.string.kcal),
                     modifier = Modifier.weight(1f),
                     accentColor = GreenPrimary

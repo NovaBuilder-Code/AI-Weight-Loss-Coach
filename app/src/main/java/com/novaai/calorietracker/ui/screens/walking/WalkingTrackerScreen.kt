@@ -24,13 +24,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.StepsStore
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.ui.components.*
+import com.novaai.calorietracker.ui.screens.onboarding.DEFAULT_STEP_GOAL
 import com.novaai.calorietracker.ui.theme.*
 import androidx.annotation.StringRes
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
-private data class DaySteps(@StringRes val labelRes: Int, val steps: Int, val goal: Int = 10_000)
+private data class DaySteps(@StringRes val labelRes: Int, val steps: Int, val goal: Int = DEFAULT_STEP_GOAL)
 
 // No weekly history storage yet: every day shows an empty bar.
 // Monday first, matching DayOfWeek.value (Monday == 1).
@@ -49,6 +51,9 @@ fun WalkingTrackerScreen(navController: NavController) {
     val context = LocalContext.current
     var isTracking by remember { mutableStateOf(false) }
     var todaySteps by remember { mutableIntStateOf(StepsStore.loadToday(context)) }
+    val stepGoal = remember {
+        UserProfileStore.load(context).dailyStepGoal ?: DEFAULT_STEP_GOAL
+    }
 
     LaunchedEffect(todaySteps) { StepsStore.save(context, todaySteps) }
 
@@ -62,7 +67,7 @@ fun WalkingTrackerScreen(navController: NavController) {
             NovaTopBar(title = stringResource(R.string.walking_tracker_title), onBack = { navController.popBackStack() })
         }
         item { Spacer(Modifier.height(8.dp)) }
-        item { StepHeroCard(todaySteps, isTracking) { isTracking = !isTracking } }
+        item { StepHeroCard(todaySteps, stepGoal, isTracking) { isTracking = !isTracking } }
         item { Spacer(Modifier.height(20.dp)) }
         item { WalkingStatsRow(todaySteps) }
         item { Spacer(Modifier.height(20.dp)) }
@@ -73,15 +78,15 @@ fun WalkingTrackerScreen(navController: NavController) {
             )
         }
         item { Spacer(Modifier.height(12.dp)) }
-        item { WeeklyBarChart() }
+        item { WeeklyBarChart(stepGoal) }
         item { Spacer(Modifier.height(20.dp)) }
         item { AchievementsCard() }
     }
 }
 
 @Composable
-private fun StepHeroCard(todaySteps: Int, isTracking: Boolean, onToggle: () -> Unit) {
-    val goal = 10_000
+private fun StepHeroCard(todaySteps: Int, stepGoal: Int, isTracking: Boolean, onToggle: () -> Unit) {
+    val goal = stepGoal
     val progress = todaySteps.toFloat() / goal
 
     val pulseScale by rememberInfiniteTransition(label = "pulse").animateFloat(
@@ -197,7 +202,7 @@ private fun WalkingStatsRow(todaySteps: Int) {
 }
 
 @Composable
-private fun WeeklyBarChart() {
+private fun WeeklyBarChart(stepGoal: Int) {
     val goalReachedLabel = stringResource(R.string.walking_legend_goal_reached)
     val belowGoalLabel = stringResource(R.string.walking_legend_below_goal)
     val todayLabel = stringResource(R.string.walking_legend_today)
@@ -214,13 +219,14 @@ private fun WeeklyBarChart() {
             ) {
                 val todayIndex = LocalDate.now().dayOfWeek.value - 1
                 weeklySteps.forEachIndexed { index, day ->
-                    val frac = (day.steps.toFloat() / day.goal).coerceIn(0f, 1f)
+                    val dayGoal = if (day.steps > 0) day.goal else stepGoal
+                    val frac = (day.steps.toFloat() / dayGoal).coerceIn(0f, 1f)
                     val isToday = index == todayIndex
                     DayBar(
                         label = stringResource(day.labelRes),
                         fraction = frac,
                         isToday = isToday,
-                        reachedGoal = day.steps > 0 && day.steps >= day.goal
+                        reachedGoal = day.steps > 0 && day.steps >= dayGoal
                     )
                 }
             }

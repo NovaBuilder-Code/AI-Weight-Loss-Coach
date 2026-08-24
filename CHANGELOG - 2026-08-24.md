@@ -39,3 +39,39 @@ only when all 10 profile fields from Tasks 12A–12B3 are answered.
 BMR/TDEE/calorie calculations (next task), Cloudflare Worker, OpenAI
 integration, chat-history behavior, all other screens, package name,
 launcher configuration.
+---
+
+# Task 12C — Personalized Calorie Target (BMR/TDEE) + Saved Step Goal. Commit (see git log).
+
+## New files
+- pp/src/main/java/com/novaai/calorietracker/data/CalorieCalculator.kt — pure
+  Kotlin math: Mifflin–St Jeor BMR, standard activity multipliers, goal
+  factors, full daily-target pipeline with safety clamps.
+- pp/src/test/java/com/novaai/calorietracker/data/CalorieCalculatorTest.kt —
+  13 JVM tests: BMR known values, all 4 multipliers, TDEE, goal factors,
+  full-pipeline targets (lose/maintain/gain on a device-style profile),
+  female/male floors, ceiling, input-grid clamp sweep, incomplete-profile null.
+
+## Modified files
+- ui/screens/home/HomeScreen.kt — calorie card goal now comes from
+  CalorieCalculator + saved profile (fallback 2000 if profile incomplete).
+- ui/screens/calories/CalorieTrackerScreen.kt — DAILY_GOAL constant removed;
+  ring/chips use the personalized target.
+- ui/screens/walking/WalkingTrackerScreen.kt — hero ring and weekly bars use
+  the saved daily step goal from onboarding (fallback DEFAULT_STEP_GOAL 10,000).
+
+## Formula / rules used
+- BMR (Mifflin–St Jeor): 10·kg + 6.25·cm − 5·age + (5 male / −161 female)
+- Activity multipliers: sedentary 1.2 · light 1.375 · moderate 1.55 · very 1.725
+- TDEE = BMR × multiplier
+- Goal factor: lose ×0.80 (safe ~20% deficit) · maintain ×1.00 · gain ×1.10 (controlled surplus)
+- Target = round(TDEE × goal factor), clamped to floor 1500 (male) / 1200 (female) and ceiling 5000
+- Incomplete profile → null → screens fall back to 2000 kcal (backward compatible)
+
+## Verification on SM-A715F
+- Onboarding completed: female 34y 175.26 cm 69.853 kg, moderately active,
+  lose weight → Home and Calorie Tracker show "/ 1814 kcal" (was hardcoded 2000).
+- Steps tracker shows "/ 10,000" from saved goal; edited saved goal to 8,000 →
+  UI showed "/ 8,000" (proves it reads the profile, not a fixed default), then restored.
+- Build green; 22 JVM unit tests (13 new + 9 existing) and 12 instrumented
+  tests pass.
