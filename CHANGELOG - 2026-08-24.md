@@ -103,3 +103,30 @@ launcher configuration.
 ## Tests
 - 22 JVM unit tests green (13 calorie + 6 conversion + 3 onboarding);
   assembleDebug builds.
+
+---
+
+# Task 12B3 (re-issue) — Activity level descriptions. Commit (see git log).
+
+Re-issued Task 12B3 spec added one requirement not present in the original
+12B3 commit (c0cc9b1): a short description under each activity level option.
+Everything else from the spec was already implemented and verified in
+c0cc9b1 (main goal, activity level, daily step goal steps; 10,000 default;
+1,000–100,000 validation; gating on all 10 fields; Finish routes to Home).
+
+## Modified files
+- ui/screens/onboarding/ProfileSetupScreen.kt — SelectOptionCard gained an
+  optional subtitle line (label + description column, compact 14dp vertical
+  padding); the activity-level step passes one description per option.
+- pp/src/main/res/values*/strings.xml (all 9 locales) — 4 new
+  profile_setup_activity_*_sub strings.
+
+## Verification on SM-A715F
+- Activity step shows all four descriptions on device (e.g. "Sedentary —
+  Mostly sitting at work, little exercise"), no layout overflow (Continue
+  button visible; no scroll needed).
+- Tested without clearing app data: activity_level key temporarily removed
+  via run-as, walked the flow, re-selected the same value (MODERATELY_ACTIVE)
+  through the UI; profile verified byte-identical afterwards (all 10 fields).
+- Force-close + reopen: onboarding not repeated, profile persists.
+- Build green; 22 JVM unit tests + 12 instrumented tests pass.

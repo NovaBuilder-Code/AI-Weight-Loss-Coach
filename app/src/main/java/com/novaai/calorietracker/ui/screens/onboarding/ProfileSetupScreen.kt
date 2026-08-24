@@ -429,24 +429,28 @@ fun ProfileSetupScreen(navController: NavController) {
                 SelectOptionCard(
                     icon = Icons.Default.Chair,
                     label = stringResource(R.string.profile_setup_activity_sedentary),
+                    subtitle = stringResource(R.string.profile_setup_activity_sedentary_sub),
                     selected = activityLevel == ActivityLevel.SEDENTARY,
                     onClick = { activityLevelName = ActivityLevel.SEDENTARY.name }
                 )
                 SelectOptionCard(
                     icon = Icons.Default.DirectionsWalk,
                     label = stringResource(R.string.profile_setup_activity_lightly),
+                    subtitle = stringResource(R.string.profile_setup_activity_lightly_sub),
                     selected = activityLevel == ActivityLevel.LIGHTLY_ACTIVE,
                     onClick = { activityLevelName = ActivityLevel.LIGHTLY_ACTIVE.name }
                 )
                 SelectOptionCard(
                     icon = Icons.Default.DirectionsRun,
                     label = stringResource(R.string.profile_setup_activity_moderately),
+                    subtitle = stringResource(R.string.profile_setup_activity_moderately_sub),
                     selected = activityLevel == ActivityLevel.MODERATELY_ACTIVE,
                     onClick = { activityLevelName = ActivityLevel.MODERATELY_ACTIVE.name }
                 )
                 SelectOptionCard(
                     icon = Icons.Default.Bolt,
                     label = stringResource(R.string.profile_setup_activity_very),
+                    subtitle = stringResource(R.string.profile_setup_activity_very_sub),
                     selected = activityLevel == ActivityLevel.VERY_ACTIVE,
                     onClick = { activityLevelName = ActivityLevel.VERY_ACTIVE.name }
                 )
@@ -526,6 +530,7 @@ private fun SetupTextField(
 private fun SelectOptionCard(
     icon: ImageVector,
     label: String,
+    subtitle: String? = null,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -540,7 +545,7 @@ private fun SelectOptionCard(
                 shape = RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -549,12 +554,20 @@ private fun SelectOptionCard(
             contentDescription = null,
             tint = if (selected) GreenPrimary else WhiteAlpha60
         )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium,
-            color = if (selected) GreenPrimary else White
-        )
-        Spacer(Modifier.weight(1f))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                color = if (selected) GreenPrimary else White
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = WhiteAlpha60
+                )
+            }
+        }
         RadioButton(
             selected = selected,
             onClick = onClick,
