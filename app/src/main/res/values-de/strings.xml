@@ -253,4 +253,19 @@
     <string name="profile_setup_weight_invalid">Gib ein gültiges Gewicht ein.</string>
     <string name="profile_setup_goal_weight_title">Was ist dein Zielgewicht?</string>
     <string name="profile_setup_goal_weight_sub">Nova hilft dir, es Schritt für Schritt zu erreichen.</string>
+    <string name="profile_setup_main_goal_title">Was ist dein Hauptziel?</string>
+    <string name="profile_setup_main_goal_sub">Nova gestaltet deinen Plan darum herum.</string>
+    <string name="profile_setup_main_goal_lose">Abnehmen</string>
+    <string name="profile_setup_main_goal_maintain">Gewicht halten</string>
+    <string name="profile_setup_main_goal_gain">Zunehmen</string>
+    <string name="profile_setup_activity_title">Wie aktiv bist du?</string>
+    <string name="profile_setup_activity_sub">Wird verwendet, um deinen täglichen Energiebedarf einzuschätzen.</string>
+    <string name="profile_setup_activity_sedentary">Bewegungsarm</string>
+    <string name="profile_setup_activity_lightly">Leicht aktiv</string>
+    <string name="profile_setup_activity_moderately">Mäßig aktiv</string>
+    <string name="profile_setup_activity_very">Sehr aktiv</string>
+    <string name="profile_setup_step_goal_title">Was ist dein tägliches Schrittziel?</string>
+    <string name="profile_setup_step_goal_sub">Ein sinnvoller Standardwert von 10.000 ist bereits eingestellt.</string>
+    <string name="profile_setup_step_goal_hint">Schritte pro Tag</string>
+    <string name="profile_setup_step_goal_invalid">Gib zwischen %1$d und %2$d Schritten ein.</string>
 </resources>

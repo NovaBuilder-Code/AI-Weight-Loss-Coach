@@ -9,10 +9,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Chair
+import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +34,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.ActivityLevel
+import com.novaai.calorietracker.data.MainGoal
 import com.novaai.calorietracker.data.MeasurementUnits
 import com.novaai.calorietracker.data.Sex
 import com.novaai.calorietracker.data.UnitConversion
@@ -36,13 +45,16 @@ import com.novaai.calorietracker.ui.components.NovaPrimaryButton
 import com.novaai.calorietracker.ui.theme.*
 import java.util.Locale
 
-private const val STEP_COUNT = 7
+private const val STEP_COUNT = 10
 const val MIN_AGE = 13
 const val MAX_AGE = 120
 const val MIN_HEIGHT_CM = 90f
 const val MAX_HEIGHT_CM = 250f
 const val MIN_WEIGHT_KG = 30f
 const val MAX_WEIGHT_KG = 300f
+const val DEFAULT_STEP_GOAL = 10000
+const val MIN_STEP_GOAL = 1000
+const val MAX_STEP_GOAL = 100000
 
 private fun parseDecimal(text: String): Float? =
     text.trim().replace(',', '.').toFloatOrNull()
@@ -53,10 +65,13 @@ private fun formatDecimal(value: Float): String =
     else String.format(Locale.US, "%.1f", value)
 
 /**
- * Onboarding questionnaire: name, age, sex (12B1) plus units, height,
- * current weight and goal weight (12B2), one question per step. Each answer
- * is merged into UserProfileStore on Continue; height/weights are stored
- * canonically in metric and converted for imperial display and input.
+ * Onboarding questionnaire: name, age, sex (12B1), units, height, current
+ * weight and goal weight (12B2), plus main goal, activity level and daily
+ * step goal (12B3), one question per step. Each answer is merged into
+ * UserProfileStore on Continue; height/weights are stored canonically in
+ * metric and converted for imperial display and input. The step goal is
+ * pre-filled with a sensible default (10,000) and validated against a
+ * reasonable range.
  */
 @Composable
 fun ProfileSetupScreen(navController: NavController) {
@@ -68,6 +83,11 @@ fun ProfileSetupScreen(navController: NavController) {
     var ageText by rememberSaveable { mutableStateOf(saved.age?.toString() ?: "") }
     var sexName by rememberSaveable { mutableStateOf(saved.sex?.name ?: "") }
     var unitsName by rememberSaveable { mutableStateOf(saved.units?.name ?: "") }
+    var mainGoalName by rememberSaveable { mutableStateOf(saved.mainGoal?.name ?: "") }
+    var activityLevelName by rememberSaveable { mutableStateOf(saved.activityLevel?.name ?: "") }
+    var stepGoalText by rememberSaveable {
+        mutableStateOf((saved.dailyStepGoal ?: DEFAULT_STEP_GOAL).toString())
+    }
 
     val savedImperial = saved.units == MeasurementUnits.IMPERIAL
     var heightCmText by rememberSaveable {
@@ -92,6 +112,10 @@ fun ProfileSetupScreen(navController: NavController) {
     val sex = Sex.entries.firstOrNull { it.name == sexName }
     val units = MeasurementUnits.entries.firstOrNull { it.name == unitsName }
     val imperial = units == MeasurementUnits.IMPERIAL
+    val mainGoal = MainGoal.entries.firstOrNull { it.name == mainGoalName }
+    val activityLevel = ActivityLevel.entries.firstOrNull { it.name == activityLevelName }
+    val stepGoal = stepGoalText.trim().toIntOrNull()
+    val stepGoalValid = stepGoal != null && stepGoal in MIN_STEP_GOAL..MAX_STEP_GOAL
 
     val heightCm: Float? = if (imperial) {
         val ft = heightFtText.trim().toIntOrNull()
@@ -144,7 +168,10 @@ fun ProfileSetupScreen(navController: NavController) {
         3 -> units != null
         4 -> heightValid
         5 -> weightValid
-        else -> goalWeightValid
+        6 -> goalWeightValid
+        7 -> mainGoal != null
+        8 -> activityLevel != null
+        else -> stepGoalValid
     }
 
     fun goBack() {
@@ -160,8 +187,11 @@ fun ProfileSetupScreen(navController: NavController) {
             3 -> UserProfileStore.save(context, current.copy(units = units))
             4 -> UserProfileStore.save(context, current.copy(heightCm = heightCm))
             5 -> UserProfileStore.save(context, current.copy(currentWeightKg = weightKg))
-            6 -> {
-                UserProfileStore.save(context, current.copy(goalWeightKg = goalWeightKg))
+            6 -> UserProfileStore.save(context, current.copy(goalWeightKg = goalWeightKg))
+            7 -> UserProfileStore.save(context, current.copy(mainGoal = mainGoal))
+            8 -> UserProfileStore.save(context, current.copy(activityLevel = activityLevel))
+            9 -> {
+                UserProfileStore.save(context, current.copy(dailyStepGoal = stepGoal))
                 navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.Onboarding.route) { inclusive = true }
                 }
@@ -239,9 +269,21 @@ fun ProfileSetupScreen(navController: NavController) {
                 title = stringResource(R.string.profile_setup_weight_title),
                 subtitle = stringResource(R.string.profile_setup_weight_sub)
             )
-            else -> QuestionHeader(
+            6 -> QuestionHeader(
                 title = stringResource(R.string.profile_setup_goal_weight_title),
                 subtitle = stringResource(R.string.profile_setup_goal_weight_sub)
+            )
+            7 -> QuestionHeader(
+                title = stringResource(R.string.profile_setup_main_goal_title),
+                subtitle = stringResource(R.string.profile_setup_main_goal_sub)
+            )
+            8 -> QuestionHeader(
+                title = stringResource(R.string.profile_setup_activity_title),
+                subtitle = stringResource(R.string.profile_setup_activity_sub)
+            )
+            else -> QuestionHeader(
+                title = stringResource(R.string.profile_setup_step_goal_title),
+                subtitle = stringResource(R.string.profile_setup_step_goal_sub)
             )
         }
 
@@ -346,7 +388,7 @@ fun ProfileSetupScreen(navController: NavController) {
                     text = stringResource(R.string.profile_setup_weight_invalid)
                 )
             }
-            else -> {
+            6 -> {
                 SetupTextField(
                     value = goalWeightText,
                     onValueChange = { input ->
@@ -361,6 +403,64 @@ fun ProfileSetupScreen(navController: NavController) {
                 ValidationError(
                     visible = goalWeightText.isNotEmpty() && !goalWeightValid,
                     text = stringResource(R.string.profile_setup_weight_invalid)
+                )
+            }
+            7 -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SelectOptionCard(
+                    icon = Icons.Default.TrendingDown,
+                    label = stringResource(R.string.profile_setup_main_goal_lose),
+                    selected = mainGoal == MainGoal.LOSE_WEIGHT,
+                    onClick = { mainGoalName = MainGoal.LOSE_WEIGHT.name }
+                )
+                SelectOptionCard(
+                    icon = Icons.Default.TrendingFlat,
+                    label = stringResource(R.string.profile_setup_main_goal_maintain),
+                    selected = mainGoal == MainGoal.MAINTAIN_WEIGHT,
+                    onClick = { mainGoalName = MainGoal.MAINTAIN_WEIGHT.name }
+                )
+                SelectOptionCard(
+                    icon = Icons.Default.TrendingUp,
+                    label = stringResource(R.string.profile_setup_main_goal_gain),
+                    selected = mainGoal == MainGoal.GAIN_WEIGHT,
+                    onClick = { mainGoalName = MainGoal.GAIN_WEIGHT.name }
+                )
+            }
+            8 -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SelectOptionCard(
+                    icon = Icons.Default.Chair,
+                    label = stringResource(R.string.profile_setup_activity_sedentary),
+                    selected = activityLevel == ActivityLevel.SEDENTARY,
+                    onClick = { activityLevelName = ActivityLevel.SEDENTARY.name }
+                )
+                SelectOptionCard(
+                    icon = Icons.Default.DirectionsWalk,
+                    label = stringResource(R.string.profile_setup_activity_lightly),
+                    selected = activityLevel == ActivityLevel.LIGHTLY_ACTIVE,
+                    onClick = { activityLevelName = ActivityLevel.LIGHTLY_ACTIVE.name }
+                )
+                SelectOptionCard(
+                    icon = Icons.Default.DirectionsRun,
+                    label = stringResource(R.string.profile_setup_activity_moderately),
+                    selected = activityLevel == ActivityLevel.MODERATELY_ACTIVE,
+                    onClick = { activityLevelName = ActivityLevel.MODERATELY_ACTIVE.name }
+                )
+                SelectOptionCard(
+                    icon = Icons.Default.Bolt,
+                    label = stringResource(R.string.profile_setup_activity_very),
+                    selected = activityLevel == ActivityLevel.VERY_ACTIVE,
+                    onClick = { activityLevelName = ActivityLevel.VERY_ACTIVE.name }
+                )
+            }
+            else -> {
+                SetupTextField(
+                    value = stepGoalText,
+                    onValueChange = { input -> stepGoalText = input.filter { it.isDigit() }.take(6) },
+                    placeholder = stringResource(R.string.profile_setup_step_goal_hint),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                ValidationError(
+                    visible = stepGoalText.isNotEmpty() && !stepGoalValid,
+                    text = stringResource(R.string.profile_setup_step_goal_invalid, MIN_STEP_GOAL, MAX_STEP_GOAL)
                 )
             }
         }

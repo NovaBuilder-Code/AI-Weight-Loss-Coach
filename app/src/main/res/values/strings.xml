@@ -448,4 +448,19 @@
     <string name="profile_setup_weight_invalid">Enter a valid weight.</string>
     <string name="profile_setup_goal_weight_title">What\'s your goal weight?</string>
     <string name="profile_setup_goal_weight_sub">Nova will help you get there step by step.</string>
+    <string name="profile_setup_main_goal_title">What\'s your main goal?</string>
+    <string name="profile_setup_main_goal_sub">Nova will tailor your plan around it.</string>
+    <string name="profile_setup_main_goal_lose">Lose weight</string>
+    <string name="profile_setup_main_goal_maintain">Maintain weight</string>
+    <string name="profile_setup_main_goal_gain">Gain weight</string>
+    <string name="profile_setup_activity_title">How active are you?</string>
+    <string name="profile_setup_activity_sub">Used to estimate your daily energy needs.</string>
+    <string name="profile_setup_activity_sedentary">Sedentary</string>
+    <string name="profile_setup_activity_lightly">Lightly active</string>
+    <string name="profile_setup_activity_moderately">Moderately active</string>
+    <string name="profile_setup_activity_very">Very active</string>
+    <string name="profile_setup_step_goal_title">What\'s your daily step goal?</string>
+    <string name="profile_setup_step_goal_sub">A sensible default of 10,000 is already set.</string>
+    <string name="profile_setup_step_goal_hint">Steps per day</string>
+    <string name="profile_setup_step_goal_invalid">Enter between %1$d and %2$d steps.</string>
 </resources>

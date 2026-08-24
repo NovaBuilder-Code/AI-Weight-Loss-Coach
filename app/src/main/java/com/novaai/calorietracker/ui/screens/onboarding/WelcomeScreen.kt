@@ -129,7 +129,9 @@ fun WelcomeScreen(navController: NavController) {
                     val setupNeeded =
                         profile.name.isNullOrBlank() || profile.age == null || profile.sex == null ||
                             profile.units == null || profile.heightCm == null ||
-                            profile.currentWeightKg == null || profile.goalWeightKg == null
+                            profile.currentWeightKg == null || profile.goalWeightKg == null ||
+                            profile.mainGoal == null || profile.activityLevel == null ||
+                            profile.dailyStepGoal == null
                     if (setupNeeded) {
                         navController.navigate(Screen.ProfileSetup.route)
                     } else {

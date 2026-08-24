@@ -253,4 +253,19 @@
     <string name="profile_setup_weight_invalid">Inserisci un peso valido.</string>
     <string name="profile_setup_goal_weight_title">Qual è il tuo peso obiettivo?</string>
     <string name="profile_setup_goal_weight_sub">Nova ti aiuterà ad arrivarci passo dopo passo.</string>
+    <string name="profile_setup_main_goal_title">Qual è il tuo obiettivo principale?</string>
+    <string name="profile_setup_main_goal_sub">Nova personalizzerà il tuo piano di conseguenza.</string>
+    <string name="profile_setup_main_goal_lose">Perdere peso</string>
+    <string name="profile_setup_main_goal_maintain">Mantenere il peso</string>
+    <string name="profile_setup_main_goal_gain">Aumentare di peso</string>
+    <string name="profile_setup_activity_title">Quanto sei attivo?</string>
+    <string name="profile_setup_activity_sub">Usato per stimare il tuo fabbisogno energetico giornaliero.</string>
+    <string name="profile_setup_activity_sedentary">Sedentario</string>
+    <string name="profile_setup_activity_lightly">Leggermente attivo</string>
+    <string name="profile_setup_activity_moderately">Moderatamente attivo</string>
+    <string name="profile_setup_activity_very">Molto attivo</string>
+    <string name="profile_setup_step_goal_title">Qual è il tuo obiettivo giornaliero di passi?</string>
+    <string name="profile_setup_step_goal_sub">Un valore predefinito ragionevole di 10.000 è già impostato.</string>
+    <string name="profile_setup_step_goal_hint">Passi al giorno</string>
+    <string name="profile_setup_step_goal_invalid">Inserisci tra %1$d e %2$d passi.</string>
 </resources>

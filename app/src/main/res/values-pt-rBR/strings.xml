@@ -253,4 +253,19 @@
     <string name="profile_setup_weight_invalid">Digite um peso válido.</string>
     <string name="profile_setup_goal_weight_title">Qual é o seu peso desejado?</string>
     <string name="profile_setup_goal_weight_sub">A Nova vai te ajudar a chegar lá passo a passo.</string>
+    <string name="profile_setup_main_goal_title">Qual é o seu objetivo principal?</string>
+    <string name="profile_setup_main_goal_sub">A Nova vai personalizar seu plano com base nele.</string>
+    <string name="profile_setup_main_goal_lose">Perder peso</string>
+    <string name="profile_setup_main_goal_maintain">Manter o peso</string>
+    <string name="profile_setup_main_goal_gain">Ganhar peso</string>
+    <string name="profile_setup_activity_title">Qual é o seu nível de atividade?</string>
+    <string name="profile_setup_activity_sub">Usado para estimar suas necessidades diárias de energia.</string>
+    <string name="profile_setup_activity_sedentary">Sedentário</string>
+    <string name="profile_setup_activity_lightly">Levemente ativo</string>
+    <string name="profile_setup_activity_moderately">Moderadamente ativo</string>
+    <string name="profile_setup_activity_very">Muito ativo</string>
+    <string name="profile_setup_step_goal_title">Qual é a sua meta diária de passos?</string>
+    <string name="profile_setup_step_goal_sub">Um padrão razoável de 10.000 já está definido.</string>
+    <string name="profile_setup_step_goal_hint">Passos por dia</string>
+    <string name="profile_setup_step_goal_invalid">Digite entre %1$d e %2$d passos.</string>
 </resources>

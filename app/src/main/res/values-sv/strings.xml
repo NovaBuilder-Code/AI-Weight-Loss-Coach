@@ -424,4 +424,19 @@
     <string name="profile_setup_weight_invalid">Ange en giltig vikt.</string>
     <string name="profile_setup_goal_weight_title">Vad är din målvikt?</string>
     <string name="profile_setup_goal_weight_sub">Nova hjälper dig att nå dit steg för steg.</string>
+    <string name="profile_setup_main_goal_title">Vad är ditt huvudmål?</string>
+    <string name="profile_setup_main_goal_sub">Nova skräddarsyr din plan utifrån det.</string>
+    <string name="profile_setup_main_goal_lose">Gå ner i vikt</string>
+    <string name="profile_setup_main_goal_maintain">Behålla vikt</string>
+    <string name="profile_setup_main_goal_gain">Gå upp i vikt</string>
+    <string name="profile_setup_activity_title">Hur aktiv är du?</string>
+    <string name="profile_setup_activity_sub">Används för att uppskatta ditt dagliga energibehov.</string>
+    <string name="profile_setup_activity_sedentary">Stillasittande</string>
+    <string name="profile_setup_activity_lightly">Lätt aktiv</string>
+    <string name="profile_setup_activity_moderately">Måttligt aktiv</string>
+    <string name="profile_setup_activity_very">Mycket aktiv</string>
+    <string name="profile_setup_step_goal_title">Vad är ditt dagliga stegmål?</string>
+    <string name="profile_setup_step_goal_sub">En rimlig standard på 10 000 är redan angiven.</string>
+    <string name="profile_setup_step_goal_hint">Steg per dag</string>
+    <string name="profile_setup_step_goal_invalid">Ange mellan %1$d och %2$d steg.</string>
 </resources>

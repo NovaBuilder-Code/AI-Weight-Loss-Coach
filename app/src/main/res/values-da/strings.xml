@@ -253,4 +253,19 @@
     <string name="profile_setup_weight_invalid">Angiv en gyldig vægt.</string>
     <string name="profile_setup_goal_weight_title">Hvad er din målvægt?</string>
     <string name="profile_setup_goal_weight_sub">Nova hjælper dig derhen trin for trin.</string>
+    <string name="profile_setup_main_goal_title">Hvad er dit hovedmål?</string>
+    <string name="profile_setup_main_goal_sub">Nova tilpasser din plan omkring det.</string>
+    <string name="profile_setup_main_goal_lose">Tabe sig</string>
+    <string name="profile_setup_main_goal_maintain">Bevare vægten</string>
+    <string name="profile_setup_main_goal_gain">Tage på</string>
+    <string name="profile_setup_activity_title">Hvor aktiv er du?</string>
+    <string name="profile_setup_activity_sub">Bruges til at vurdere dit daglige energibehov.</string>
+    <string name="profile_setup_activity_sedentary">Stillesiddende</string>
+    <string name="profile_setup_activity_lightly">Let aktiv</string>
+    <string name="profile_setup_activity_moderately">Moderat aktiv</string>
+    <string name="profile_setup_activity_very">Meget aktiv</string>
+    <string name="profile_setup_step_goal_title">Hvad er dit daglige skridtmål?</string>
+    <string name="profile_setup_step_goal_sub">En fornuftig standard på 10.000 er allerede angivet.</string>
+    <string name="profile_setup_step_goal_hint">Skridt om dagen</string>
+    <string name="profile_setup_step_goal_invalid">Angiv mellem %1$d og %2$d skridt.</string>
 </resources>

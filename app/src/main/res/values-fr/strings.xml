@@ -253,4 +253,19 @@
     <string name="profile_setup_weight_invalid">Saisis un poids valide.</string>
     <string name="profile_setup_goal_weight_title">Quel est ton poids cible ?</string>
     <string name="profile_setup_goal_weight_sub">Nova t\'aidera à y arriver pas à pas.</string>
+    <string name="profile_setup_main_goal_title">Quel est ton objectif principal ?</string>
+    <string name="profile_setup_main_goal_sub">Nova adaptera ton plan en conséquence.</string>
+    <string name="profile_setup_main_goal_lose">Perdre du poids</string>
+    <string name="profile_setup_main_goal_maintain">Maintenir mon poids</string>
+    <string name="profile_setup_main_goal_gain">Prendre du poids</string>
+    <string name="profile_setup_activity_title">Quel est ton niveau d\'activité ?</string>
+    <string name="profile_setup_activity_sub">Utilisé pour estimer tes besoins énergétiques quotidiens.</string>
+    <string name="profile_setup_activity_sedentary">Sédentaire</string>
+    <string name="profile_setup_activity_lightly">Légèrement actif</string>
+    <string name="profile_setup_activity_moderately">Modérément actif</string>
+    <string name="profile_setup_activity_very">Très actif</string>
+    <string name="profile_setup_step_goal_title">Quel est ton objectif quotidien de pas ?</string>
+    <string name="profile_setup_step_goal_sub">Une valeur par défaut raisonnable de 10 000 est déjà définie.</string>
+    <string name="profile_setup_step_goal_hint">Pas par jour</string>
+    <string name="profile_setup_step_goal_invalid">Saisis entre %1$d et %2$d pas.</string>
 </resources>
