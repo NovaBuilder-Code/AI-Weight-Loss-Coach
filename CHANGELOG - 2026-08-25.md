@@ -238,3 +238,30 @@ step source (e.g. foreground SensorListener / Health Connect) as a future task.
 Onboarding, calorie logic, profile logic, Goals, AI chat backend, all other
 screens. No AlarmManager, Firebase, push, or backend. Defaults from 14A
 untouched.
+
+---
+
+# 14B.1 — Center Nova welcome-screen portrait only
+
+Layout-only fix on the onboarding welcome screen: the Nova coach portrait
+rendered too far to the left. The hero asset itself places Nova's portrait
+left-of-centre, so the containing Box/Image (already full-width centred) could
+not fix it.
+
+## What changed
+- `ui/screens/onboarding/WelcomeScreen.kt` — the hero image is now uniformly
+  zoomed about its top-left corner by `0.5 / HERO_PORTRAIT_CENTER` (measured
+  portrait centre ≈ 0.355 of the asset width). This puts the portrait exactly
+  at screen centre while the left edge stays covered (no gap/seam) and the
+  right side (including the green glow) overflows and is clipped. A vertical
+  compensation keeps the top of Nova's head at its original height (no
+  cropping of the face/head). Everything is a fraction of the box width, so it
+  stays centred across screen widths/aspect ratios.
+- No asset, text, feature chips, CTA, colours, fonts or other screens changed.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (unchanged suites).
+- On SM-A715F (`adb install -r`, no uninstall, no data cleared): screenshot
+  pixel analysis before/after — portrait head/face moved from ~335–406 px
+  (screen centre 540) to ~490–561 px, head top exactly at screen centre, glow
+  still visible, no crashes. App remains installed.

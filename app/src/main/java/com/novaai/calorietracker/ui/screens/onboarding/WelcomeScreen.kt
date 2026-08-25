@@ -16,7 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -34,8 +37,22 @@ import com.novaai.calorietracker.ui.components.NovaPrimaryButton
 import com.novaai.calorietracker.ui.theme.*
 
 /** Fixed hero height (rather than the full uncropped aspect ratio) so the screen fits on one page;
- *  paired with Alignment.TopCenter this only trims the lower shoulder/torso, never the face. */
+ *  paired with the top pivot this only trims the lower shoulder/torso, never the face. */
 private val HERO_IMAGE_HEIGHT = 470.dp
+
+/**
+ * Horizontal centre of Nova's portrait inside the hero asset (0..1 of its
+ * width). The asset places the portrait left-of-centre, so the rendered image
+ * is zoomed about its top-left corner (0.5 / centre = zoom, which also puts
+ * the portrait at screen centre) and shifted back up vertically so the head
+ * keeps its original height. The zoom is responsive: everything is a fraction
+ * of the box width.
+ */
+private const val HERO_PORTRAIT_CENTER = 0.355f
+
+/** Vertical position of the top of Nova's head inside the source, as a fraction
+ *  of the source WIDTH (the hero is layout-scaled by width on phones). */
+private const val HERO_HEAD_TOP_SOURCE = 120f / 471f
 
 private data class OnboardingFeature(
     val icon: ImageVector,
@@ -63,17 +80,33 @@ fun WelcomeScreen(navController: NavController) {
             .background(NavyDeep)
             .verticalScroll(rememberScrollState())
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(HERO_IMAGE_HEIGHT)
+                .clipToBounds()
         ) {
+            // Uniform zoom about the top-left corner: with 0.5/centre as the
+            // zoom factor the portrait lands exactly at screen centre, the left
+            // edge stays covered (no gap) and the right side (incl. the green
+            // glow) overflows and is clipped. The head is pulled back up to its
+            // original height, and everything is a fraction of the width so it
+            // stays centred on any screen size.
+            val heroZoom = 0.5f / HERO_PORTRAIT_CENTER
+            val headTopDp = maxWidth * HERO_HEAD_TOP_SOURCE
             Image(
                 painter = painterResource(R.drawable.nova_hero),
                 contentDescription = stringResource(R.string.onboarding_hero_cd),
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = heroZoom
+                        scaleY = heroZoom
+                        transformOrigin = TransformOrigin(0f, 0f)
+                        translationY = (headTopDp * (1f - heroZoom)).toPx()
+                    }
             )
             Box(
                 modifier = Modifier
