@@ -31,9 +31,18 @@ object NotificationPrefsStore {
     private const val KEY_STEPS = "steps"
     private const val KEY_WEIGH_IN = "weigh_in"
     private const val KEY_MOTIVATION = "motivation"
+    private const val KEY_PERMISSION_ASKED = "permission_asked"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    /** True once the user has been asked for notification permission (no re-nagging). */
+    fun hasAskedPermission(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_PERMISSION_ASKED, false)
+
+    fun markPermissionAsked(context: Context) {
+        prefs(context).edit().putBoolean(KEY_PERMISSION_ASKED, true).apply()
+    }
 
     fun load(context: Context): NotificationPrefs {
         val defaults = NotificationPrefs()

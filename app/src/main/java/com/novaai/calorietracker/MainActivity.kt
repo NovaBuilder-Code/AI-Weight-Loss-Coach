@@ -3,6 +3,7 @@ package com.novaai.calorietracker
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -23,6 +24,9 @@ import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.navigation.bottomNavItems
 import com.novaai.calorietracker.data.LanguageStore
 import com.novaai.calorietracker.data.NovaLanguageState
+import com.novaai.calorietracker.data.NovaNotifier
+import com.novaai.calorietracker.data.NotificationPrefsStore
+import com.novaai.calorietracker.data.ReminderScheduler
 import com.novaai.calorietracker.data.ThemeStore
 import com.novaai.calorietracker.ui.components.NovaBottomBar
 import com.novaai.calorietracker.ui.theme.NavyDeep
@@ -41,6 +45,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         NovaThemeState.mode = ThemeStore.load(this)
         NovaLanguageState.language = LanguageStore.load(this)
+        NovaNotifier.ensureChannel(this)
+        ReminderScheduler.syncFromPrefs(this, NotificationPrefsStore.load(this))
         setContent {
             // Resolve all string resources against the saved language. The
             // snapshot state makes the whole tree recompose immediately when
@@ -55,7 +61,8 @@ class MainActivity : ComponentActivity() {
             }
             CompositionLocalProvider(
                 LocalContext provides localizedContext,
-                LocalConfiguration provides localizedContext.resources.configuration
+                LocalConfiguration provides localizedContext.resources.configuration,
+                LocalActivityResultRegistryOwner provides this
             ) {
                 NovaAITheme {
                     val navController = rememberNavController()

@@ -396,6 +396,22 @@
     <string name="notif_motivation">Daily Motivation</string>
     <string name="notif_motivation_sub">A boost from Nova every morning</string>
 
+    <!-- Notifications (14B) -->
+    <string name="notification_channel_name">Nova Reminders</string>
+    <string name="notification_channel_desc">Meal, hydration, weigh-in, step and motivation reminders</string>
+    <string name="notification_meal_breakfast_title">Breakfast time</string>
+    <string name="notification_meal_breakfast_body">Time to log your breakfast</string>
+    <string name="notification_meal_lunch_title">Lunch time</string>
+    <string name="notification_meal_lunch_body">Time to log your lunch</string>
+    <string name="notification_meal_dinner_title">Dinner time</string>
+    <string name="notification_meal_dinner_body">Time to log your dinner</string>
+    <string name="notification_hydration_title">Stay hydrated</string>
+    <string name="notification_hydration_body">Time for a glass of water</string>
+    <string name="notification_weighin_title">Weekly weigh-in</string>
+    <string name="notification_weighin_body">Step on the scale and log your weight</string>
+    <string name="notification_motivation_title">Good morning from Nova</string>
+    <string name="notification_motivation_body">You\'ve got this — let\'s make today count</string>
+
     <!-- Personal Info (MVP) -->
     <string name="pi_name">Name</string>
     <string name="pi_email">Email</string>

@@ -162,3 +162,79 @@ no actual scheduling/alarms/notifications/permissions yet (future task).
 Onboarding, calorie logic, profile logic, Goals, AI chat backend, all other
 screens. No notification scheduling, alarms, WorkManager, Firebase, push, or
 permission prompts were added.
+
+---
+
+# Task 14B — Real Android notifications from the saved preferences
+
+Turns the Task 14A toggles into actual Android notification scheduling via
+WorkManager (no Firebase / backend). Settings layer and UI unchanged; this
+adds the scheduling/plumbing and the notification permission handling.
+
+## What changed
+- `gradle/libs.versions.toml` + `app/build.gradle.kts` — added
+  `androidx.work:work-runtime-ktx:2.9.1` (WorkManager).
+- `AndroidManifest.xml` — added `POST_NOTIFICATIONS` permission.
+- `data/ReminderSchedule.kt` (new) — pure, unit-testable scheduling decisions:
+  meal windows (07–08 / 12–13 / 18–19), hydration daytime window (08–21),
+  morning motivation slot (07–08), weekly weigh-in rule, once-per-day meal &
+  motivation dedup, hydration 3-hour throttle.
+- `data/ReminderDedupStore.kt` (new) — SharedPreferences dedup state so the
+  recurring workers never post duplicates.
+- `data/NovaNotifier.kt` (new) — creates the "nova_reminders" channel
+  (idempotent) and posts notifications; tapping one opens the app (launcher
+  intent).
+- `data/ReminderWorkers.kt` (new) — 5 periodic workers:
+  Meal (breakfast/lunch/dinner), Hydration (daytime, 3h throttle), Weigh-in
+  (weekly), Motivation (morning, once/day). StepGoalReminderWorker is a
+  scheduled-but-no-op placeholder (see "Step Goal Alerts" below).
+- `data/ReminderScheduler.kt` (new) — isolated WorkManager enqueue/cancel with
+  stable unique names (`nova_reminder_*`), REPLACE on enable, cancelUniqueWork
+  on disable, and a `syncFromPrefs` reconcile on every app start — idempotent
+  across restart/toggles, no duplicates.
+- `NotificationPrefsStore.kt` — added a `permission_asked` flag (defaults
+  untouched) so POST_NOTIFICATIONS is requested exactly once.
+- `MainActivity.kt` — creates the channel and calls `syncFromPrefs` on start;
+  also provides `LocalActivityResultRegistryOwner` (the app overrides
+  `LocalContext` with a localized context, which otherwise breaks
+  `rememberLauncherForActivityResult` — the cause of a crash on the
+  Notifications screen).
+- `ui/screens/profile/NotificationsScreen.kt` — requests POST_NOTIFICATIONS
+  once on Android 13+ (not granted + not yet asked); each toggle change now
+  also calls `ReminderScheduler.syncFromPrefs` so enable/disable takes effect
+  immediately.
+- `res/values/strings.xml` — notification channel + reminder text strings.
+- `test/.../ReminderScheduleTest.kt` (new) — 6 JVM tests for the windows/rules
+  above.
+
+## Notification permission behavior
+- Requested only on Android 13+ (API 33+, where the OS requires it), only when
+  not granted and never asked before; the `permission_asked` flag prevents
+  re-nagging. On older versions no dialog is shown. If denied, scheduling still
+  runs but the OS suppresses the notifications (no crash).
+
+## Step Goal Alerts (blocked part)
+Scheduled/cancelled with the others, but intentionally a NO-OP: the app has no
+reliable live/background step source yet, so step progress is NOT faked. Only
+the scheduling plumbing is in place; real step-goal alerts need a background
+step source (e.g. foreground SensorListener / Health Connect) as a future task.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (6 ReminderSchedule tests +
+  all existing suites).
+- On SM-A715F (Android 13, safe in-place `adb install -r`): app stays
+  installed; POST_NOTIFICATIONS dialog shown once on first opening Notifications
+  → granted (`granted=true`, `permission_asked=true` persisted, no re-nagging).
+  WorkManager scheduled 4 periodic jobs with defaults on; jobscheduler shows
+  4-job run batches on background. Toggled Meals OFF → batches drop to 3 (work
+  cancelled); toggled back ON → batches back to 4 (rescheduled). Notification
+  prefs persist after force-close/reopen; user profile/Goals/sleep data
+  untouched; no crashes. Note: first run exposed a pre-existing
+  `No ActivityResultRegistryOwner` crash on the Notifications screen caused by
+  the localized-context override — fixed via `LocalActivityResultRegistryOwner
+  provides this` in MainActivity.
+
+## Unchanged by design
+Onboarding, calorie logic, profile logic, Goals, AI chat backend, all other
+screens. No AlarmManager, Firebase, push, or backend. Defaults from 14A
+untouched.

@@ -1,5 +1,10 @@
 package com.novaai.calorietracker.ui.screens.profile
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,10 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.NotificationPrefs
 import com.novaai.calorietracker.data.NotificationPrefsStore
+import com.novaai.calorietracker.data.ReminderScheduler
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 
@@ -31,7 +38,22 @@ fun NotificationsScreen(navController: NavController) {
     fun update(transform: (NotificationPrefs) -> NotificationPrefs) {
         val updated = transform(prefs)
         NotificationPrefsStore.save(context, updated)
+        ReminderScheduler.syncFromPrefs(context, updated)
         prefs = updated
+    }
+
+    // Android 13+ requires POST_NOTIFICATIONS; ask exactly once, then stop nagging.
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED &&
+            !NotificationPrefsStore.hasAskedPermission(context)
+        ) {
+            NotificationPrefsStore.markPermissionAsked(context)
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     Column(
