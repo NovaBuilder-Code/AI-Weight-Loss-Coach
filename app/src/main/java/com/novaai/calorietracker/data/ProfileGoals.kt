@@ -10,6 +10,9 @@ import com.novaai.calorietracker.ui.screens.onboarding.DEFAULT_STEP_GOAL
  */
 object ProfileGoals {
 
+    /** Sensible upper limit for the daily sleep goal: a day has < 24 hours of sleep. */
+    const val MAX_SLEEP_GOAL = 24f
+
     /** Personalized daily calorie target, or the 2000 fallback when the profile is incomplete. */
     fun calorieTarget(profile: UserProfile): Int =
         CalorieCalculator.calculateDailyTarget(profile) ?: CalorieCalculator.DEFAULT_DAILY_TARGET
@@ -29,4 +32,10 @@ object ProfileGoals {
         val value = text.trim().replace(',', '.').toFloatOrNull() ?: return null
         return if (imperial) UnitConversion.lbToKg(value) else value
     }
+
+    /** 0..24 (exclusive) — zero hours is a valid "no goal yet" value; negatives rejected. */
+    fun validSleepGoal(hours: Float): Boolean = hours >= 0f && hours < MAX_SLEEP_GOAL
+
+    /** Sleep goal text without a trailing ".0" (e.g. "0" for 0 hours). */
+    fun formatSleepGoal(hours: Float): String = ProfileDisplay.formatDecimal(hours)
 }

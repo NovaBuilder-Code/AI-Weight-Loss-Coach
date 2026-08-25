@@ -1,7 +1,9 @@
 package com.novaai.calorietracker.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProfileGoalsTest {
@@ -65,5 +67,28 @@ class ProfileGoalsTest {
     fun parseWeightRejectsGarbage() {
         assertNull(ProfileGoals.parseWeightToKg("abc", false))
         assertNull(ProfileGoals.parseWeightToKg("", true))
+    }
+
+    @Test
+    fun sleepGoalAllowsZero() {
+        assertTrue(ProfileGoals.validSleepGoal(0f))
+        assertTrue(ProfileGoals.validSleepGoal(0.0f))
+        assertTrue(ProfileGoals.validSleepGoal(8f))
+        assertTrue(ProfileGoals.validSleepGoal(23.5f))
+    }
+
+    @Test
+    fun sleepGoalRejectsNegativesAndUpperLimit() {
+        assertFalse(ProfileGoals.validSleepGoal(-0.1f))
+        assertFalse(ProfileGoals.validSleepGoal(-8f))
+        assertFalse(ProfileGoals.validSleepGoal(24f))
+        assertFalse(ProfileGoals.validSleepGoal(100f))
+    }
+
+    @Test
+    fun sleepGoalFormatsWithoutTrailingZero() {
+        assertEquals("0", ProfileGoals.formatSleepGoal(0f))
+        assertEquals("8", ProfileGoals.formatSleepGoal(8f))
+        assertEquals("7.5", ProfileGoals.formatSleepGoal(7.5f))
     }
 }

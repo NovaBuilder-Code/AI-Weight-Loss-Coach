@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.MeasurementUnits
 import com.novaai.calorietracker.data.ProfileGoals
+import com.novaai.calorietracker.data.SleepGoalStore
 import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.screens.onboarding.MAX_STEP_GOAL
@@ -43,7 +44,9 @@ private data class GoalItem(
     val labelRes: Int,
     val color: Color,
     val isDecimal: Boolean,
-    val editable: Boolean = true
+    val editable: Boolean = true,
+    val allowZero: Boolean = false,
+    val maxValue: Float = 100000f
 )
 
 @Composable
@@ -56,7 +59,7 @@ fun GoalsScreen(navController: NavController) {
             GoalItem("calories", Icons.Default.LocalFireDepartment, R.string.goals_calories, WarningAmber, false, editable = false),
             GoalItem("steps",    Icons.Default.DirectionsWalk,      R.string.goals_steps,    GreenPrimary, false),
             GoalItem("water",    Icons.Default.WaterDrop,           R.string.goals_water,    Color(0xFF40CFFF), true),
-            GoalItem("sleep",    Icons.Default.NightsStay,          R.string.goals_sleep,    Color(0xFF9B8FFF), true),
+            GoalItem("sleep",    Icons.Default.NightsStay,          R.string.goals_sleep,    Color(0xFF9B8FFF), true, allowZero = true, maxValue = ProfileGoals.MAX_SLEEP_GOAL),
             GoalItem("weight",   Icons.Default.MonitorWeight,       if (imperial) R.string.goals_weight_imperial else R.string.goals_weight, InfoBlue, true)
         )
     }
@@ -65,7 +68,7 @@ fun GoalsScreen(navController: NavController) {
             "calories" to ProfileGoals.calorieTarget(profile).toString(),
             "steps" to ProfileGoals.stepGoal(profile).toString(),
             "water" to "2.5",
-            "sleep" to "8.0",
+            "sleep" to ProfileGoals.formatSleepGoal(SleepGoalStore.load(context)),
             "weight" to ProfileGoals.goalWeightText(profile)
         )
     }
@@ -178,6 +181,12 @@ fun GoalsScreen(navController: NavController) {
                                 )
                             }
                     }
+                    "sleep" -> {
+                        val hours = normalizedSleep(newValue)
+                        if (hours != null && ProfileGoals.validSleepGoal(hours)) {
+                            SleepGoalStore.save(context, hours)
+                        }
+                    }
                     else -> Unit
                 }
                 editing = null
@@ -185,6 +194,9 @@ fun GoalsScreen(navController: NavController) {
         )
     }
 }
+
+/** Normalizes "0"/"0.0"/",5" etc. to a float; null when not a number. */
+private fun normalizedSleep(text: String): Float? = text.trim().replace(',', '.').toFloatOrNull()
 
 @Composable
 private fun EditGoalDialog(
@@ -196,7 +208,8 @@ private fun EditGoalDialog(
     var text by remember { mutableStateOf(currentValue) }
     val normalized = text.replace(',', '.')
     val valid = if (item.isDecimal) {
-        normalized.toFloatOrNull()?.let { it > 0f && it < 100000f } == true
+        val v = normalized.toFloatOrNull()
+        v != null && v >= 0f && (v > 0f || item.allowZero) && v < item.maxValue
     } else {
         text.toIntOrNull()?.let { it in 1..100000 } == true
     }

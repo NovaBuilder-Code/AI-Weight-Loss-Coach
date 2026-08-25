@@ -49,5 +49,38 @@ from the MVP checklist for the profile-backed goals.
 
 ## Unchanged by design
 Onboarding, calorie target, step goal, Profile screen (13A), Edit Profile
-(13B), chat history, Cloudflare Worker, all other screens. Water/sleep goal
-storage (no data source yet) and device-side verification are future work.
+(13B), chat history, Cloudflare Worker, all other screens. Water goal storage
+(no data source yet) remains future work.
+
+---
+
+# Sleep (hours) edit fix — new users start at 0, allow saving 0
+
+Follow-up bug fix on the Goals screen: the Sleep field showed a hardcoded
+default "8.0" and the Save button stayed disabled when the value was cleared
+to 0 (the shared decimal validation required > 0).
+
+## What changed
+- `ui/screens/profile/GoalsScreen.kt`:
+  - Sleep now seeds from the saved value with a 0-hour default (new users see
+    "0", not "8.0").
+  - Per-item validation: decimal goals gained `allowZero` + `maxValue`.
+    Sleep allows 0 / 0.0, still rejects negatives, and has a sensible upper
+    limit (24, exclusive). Water/weight keep their existing > 0 .. < 100000
+    validation (water unchanged).
+  - Saving Sleep persists to the new `SleepGoalStore` (0 included), so the
+    value survives app close/reopen.
+- `data/SleepGoalStore.kt` (new) — SharedPreferences store in the existing
+  pattern; default 0 hours.
+- `data/ProfileGoals.kt` — `MAX_SLEEP_GOAL`, `validSleepGoal` (0 ..< 24),
+  `formatSleepGoal` (no trailing ".0").
+- `test/.../ProfileGoalsTest.kt` — 3 new tests: 0 accepted, negatives and
+  24+ rejected, formatting.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (12 ProfileGoals tests).
+- On SM-A715F: Sleep row shows 0 by default; changed to 7.5 → persisted to
+  `sleep_goal.xml`; changed to 0 → Save enabled, persisted as 0.0; force-close
+  + relaunch → Goals still shows 0; negative value (-1) rejected (not saved).
+  Calories/steps/water/weight values unchanged. App remains installed, no
+  data cleared, no crashes.
