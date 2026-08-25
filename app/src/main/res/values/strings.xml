@@ -379,6 +379,7 @@
     <string name="goals_water">Water (L)</string>
     <string name="goals_sleep">Sleep (hours)</string>
     <string name="goals_weight">Goal Weight (kg)</string>
+    <string name="goals_weight_imperial">Goal Weight (lb)</string>
     <string name="goals_dialog_title">Edit Goal</string>
     <string name="goals_dialog_label">New value</string>
 

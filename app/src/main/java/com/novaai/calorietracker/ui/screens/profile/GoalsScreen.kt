@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,7 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.MeasurementUnits
+import com.novaai.calorietracker.data.ProfileGoals
+import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.ui.components.*
+import com.novaai.calorietracker.ui.screens.onboarding.MAX_STEP_GOAL
+import com.novaai.calorietracker.ui.screens.onboarding.MIN_STEP_GOAL
 import com.novaai.calorietracker.ui.theme.*
 
 private data class GoalItem(
@@ -36,26 +42,31 @@ private data class GoalItem(
     val icon: ImageVector,
     val labelRes: Int,
     val color: Color,
-    val isDecimal: Boolean
-)
-
-private val goalItems = listOf(
-    GoalItem("calories", Icons.Default.LocalFireDepartment, R.string.goals_calories, WarningAmber, false),
-    GoalItem("steps",    Icons.Default.DirectionsWalk,      R.string.goals_steps,    GreenPrimary, false),
-    GoalItem("water",    Icons.Default.WaterDrop,           R.string.goals_water,    Color(0xFF40CFFF), true),
-    GoalItem("sleep",    Icons.Default.NightsStay,          R.string.goals_sleep,    Color(0xFF9B8FFF), true),
-    GoalItem("weight",   Icons.Default.MonitorWeight,       R.string.goals_weight,   InfoBlue, true)
+    val isDecimal: Boolean,
+    val editable: Boolean = true
 )
 
 @Composable
 fun GoalsScreen(navController: NavController) {
-    val values = remember {
+    val context = LocalContext.current
+    val profile = remember { UserProfileStore.load(context) }
+    val imperial = profile.units == MeasurementUnits.IMPERIAL
+    val goals = remember(imperial) {
+        listOf(
+            GoalItem("calories", Icons.Default.LocalFireDepartment, R.string.goals_calories, WarningAmber, false, editable = false),
+            GoalItem("steps",    Icons.Default.DirectionsWalk,      R.string.goals_steps,    GreenPrimary, false),
+            GoalItem("water",    Icons.Default.WaterDrop,           R.string.goals_water,    Color(0xFF40CFFF), true),
+            GoalItem("sleep",    Icons.Default.NightsStay,          R.string.goals_sleep,    Color(0xFF9B8FFF), true),
+            GoalItem("weight",   Icons.Default.MonitorWeight,       if (imperial) R.string.goals_weight_imperial else R.string.goals_weight, InfoBlue, true)
+        )
+    }
+    val values = remember(profile) {
         mutableStateMapOf(
-            "calories" to "2000",
-            "steps" to "10000",
+            "calories" to ProfileGoals.calorieTarget(profile).toString(),
+            "steps" to ProfileGoals.stepGoal(profile).toString(),
             "water" to "2.5",
             "sleep" to "8.0",
-            "weight" to "70.0"
+            "weight" to ProfileGoals.goalWeightText(profile)
         )
     }
     var editing by remember { mutableStateOf<GoalItem?>(null) }
@@ -93,11 +104,11 @@ fun GoalsScreen(navController: NavController) {
             cornerRadius = 18.dp
         ) {
             Column {
-                goalItems.forEachIndexed { index, item ->
+                goals.forEachIndexed { index, item ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { editing = item }
+                            .then(if (item.editable) Modifier.clickable { editing = item } else Modifier)
                             .padding(vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -122,14 +133,16 @@ fun GoalsScreen(navController: NavController) {
                             fontSize = 16.sp,
                             color = item.color
                         )
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.goals_dialog_title),
-                            tint = WhiteAlpha30,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        if (item.editable) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.goals_dialog_title),
+                                tint = WhiteAlpha30,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
-                    if (index < goalItems.size - 1) {
+                    if (index < goals.size - 1) {
                         HorizontalDivider(color = NavyBorder.copy(alpha = 0.5f), thickness = 0.5.dp)
                     }
                 }
@@ -146,6 +159,27 @@ fun GoalsScreen(navController: NavController) {
             onDismiss = { editing = null },
             onSave = { newValue ->
                 values[item.id] = newValue
+                when (item.id) {
+                    "steps" -> {
+                        val steps = newValue.trim().toIntOrNull()
+                        if (steps != null && steps in MIN_STEP_GOAL..MAX_STEP_GOAL) {
+                            UserProfileStore.save(
+                                context,
+                                UserProfileStore.load(context).copy(dailyStepGoal = steps)
+                            )
+                        }
+                    }
+                    "weight" -> {
+                        ProfileGoals.parseWeightToKg(newValue, profile.units == MeasurementUnits.IMPERIAL)
+                            ?.let { kg ->
+                                UserProfileStore.save(
+                                    context,
+                                    UserProfileStore.load(context).copy(goalWeightKg = kg)
+                                )
+                            }
+                    }
+                    else -> Unit
+                }
                 editing = null
             }
         )

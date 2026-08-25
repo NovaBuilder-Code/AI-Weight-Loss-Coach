@@ -375,6 +375,7 @@
     <string name="goals_water">Vann (L)</string>
     <string name="goals_sleep">Søvn (timer)</string>
     <string name="goals_weight">Målvekt (kg)</string>
+    <string name="goals_weight_imperial">Målvekt (lb)</string>
     <string name="goals_dialog_title">Rediger mål</string>
     <string name="goals_dialog_label">Ny verdi</string>
 
