@@ -238,7 +238,16 @@
     <string name="scan_food_body">Take or upload a food photo and Nova AI will estimate calories, protein, carbs, and fat.</string>
     <string name="scan_food_take_photo">Take Photo</string>
     <string name="scan_food_upload_gallery">Upload from Gallery</string>
-    <string name="scan_food_helper">AI food recognition will be added in the next version.</string>
+    <string name="scan_food_helper">Nova AI estimates calories and macros from your food photo. Results are estimates, not lab values.</string>
+    <string name="scan_food_analyze">Analyze with Nova AI</string>
+    <string name="scan_food_analyzing">Analyzing your photo…</string>
+    <string name="scan_food_result_title">AI Estimate</string>
+    <string name="scan_food_result_confidence">Confidence</string>
+    <string name="scan_food_result_total">Total</string>
+    <string name="scan_food_no_food">No food detected — try a clearer photo of the food.</string>
+    <string name="scan_food_error_network">Couldn\'t reach the Nova server. Check your connection and try again.</string>
+    <string name="scan_food_error_timeout">Nova took too long to respond. Please try again.</string>
+    <string name="scan_food_error_server">Nova AI is having trouble right now. Please try again.</string>
     <string name="scan_food_snackbar_camera">Camera scan coming soon</string>
     <string name="scan_food_snackbar_gallery">Gallery upload coming soon</string>
     <string name="scan_food_snackbar_photo_selected">Photo selected</string>
