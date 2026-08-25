@@ -126,3 +126,39 @@ the existing `UserProfileStore` (single source of truth).
   still 155 lb. Then restored Current Weight to 154 lb (69.85 kg). All other
   fields, Goals values (steps 10,000, goal weight, sleep 0.0) unchanged. App
   remains installed (in-place upgrade), no data cleared, no crashes.
+
+---
+
+# Task 14A — Notifications screen connected to saved preferences
+
+The Profile → Notifications screen already had the correct 5-toggle UI but its
+state was in-memory only (reset every launch, nothing persisted). It now reads
+and writes local persisted preferences. This is the saved settings layer only —
+no actual scheduling/alarms/notifications/permissions yet (future task).
+
+## What changed
+- `data/NotificationPrefsStore.kt` (new) — `NotificationPrefs` data class with
+  explicit new-user defaults (meals, water, steps, motivation = on; weigh-in =
+  off) and a SharedPreferences store in the existing project pattern
+  (`load` / `save`; every toggle change persists immediately via apply()).
+- `ui/screens/profile/NotificationsScreen.kt` — loads `NotificationPrefsStore`
+  on open; each `NovaToggleRow` change is saved to the store immediately
+  (`load + copy + save`) and reflected in the UI. Same screen, same strings,
+  same design — no redesign, no new strings.
+- `test/.../NotificationPrefsTest.kt` (new) — 2 JVM tests: explicit defaults
+  for a new user; toggling one field preserves the others.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (2 new NotificationPrefs
+  tests + all existing suites).
+- On SM-A715F (safe in-place `adb install -r`, no connected test suite run):
+  Notifications shows defaults (Meals/Hydration/Steps/Motivation on,
+  Weigh-In off). Toggled Meals off + Weigh-In on → `notification_prefs.xml`
+  updated immediately (meals=false, weigh_in=true). Force-close + relaunch →
+  the same toggles persisted. Then restored to defaults. App remains installed,
+  no data cleared, no crashes.
+
+## Unchanged by design
+Onboarding, calorie logic, profile logic, Goals, AI chat backend, all other
+screens. No notification scheduling, alarms, WorkManager, Firebase, push, or
+permission prompts were added.
