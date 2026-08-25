@@ -302,3 +302,26 @@ showing more of the original art.
   blends smoothly (no hard edge); navy breathing room below the portrait before
   the logo text; content below the hero intact; no crashes. App remains
   installed.
+
+---
+
+# 14B.3 — Tiny vertical nudge for Nova welcome portrait only
+
+Scale and horizontal centering from 14B.2 kept exactly as they are. Only the
+portrait's vertical position changes: it is nudged slightly upward.
+
+## What changed (`ui/screens/onboarding/WelcomeScreen.kt`)
+- New `HERO_RAISE = 9.dp` subtracted from the existing head-height
+  compensation in `translationY` — a responsive DP offset (≈ 24 px on the
+  2.625-density SM-A715F), not a device-specific pixel hack.
+- Nothing else touched: zoom, horizontal centering, left fade, hero height,
+  logo, headline, chips, CTA, fonts, colours, asset and other screens all
+  unchanged.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (unchanged suites).
+- On SM-A715F (`adb install -r`, no uninstall, no data cleared): screenshot
+  pixel analysis — head-top skin moved from y=226 to y=202 (exactly 24 px
+  upward, within the 20–30 px target); horizontal head centre unchanged
+  (≈557 px vs screen centre 540); full hair/head, shoulders and the green
+  glow all still visible; no crashes. App remains installed.

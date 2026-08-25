@@ -61,6 +61,9 @@ private const val HERO_ZOOM = 1.15f
  *  of the source WIDTH (the hero is layout-scaled by width on phones). */
 private const val HERO_HEAD_TOP_SOURCE = 120f / 471f
 
+/** 14B.3: tiny upward nudge for the portrait (~9 dp ≈ 24 px on the test device). */
+private val HERO_RAISE = 9.dp
+
 private data class OnboardingFeature(
     val icon: ImageVector,
     val labelRes: Int,
@@ -113,7 +116,7 @@ fun WelcomeScreen(navController: NavController) {
                         scaleY = HERO_ZOOM
                         transformOrigin = TransformOrigin(0f, 0f)
                         translationX = heroGapDp.toPx()
-                        translationY = (headTopDp * (1f - HERO_ZOOM)).toPx()
+                        translationY = (headTopDp * (1f - HERO_ZOOM) - HERO_RAISE).toPx()
                     }
             )
             Box(
