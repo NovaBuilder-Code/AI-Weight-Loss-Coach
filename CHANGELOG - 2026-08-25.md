@@ -265,3 +265,40 @@ not fix it.
   pixel analysis before/after — portrait head/face moved from ~335–406 px
   (screen centre 540) to ~490–561 px, head top exactly at screen centre, glow
   still visible, no crashes. App remains installed.
+
+---
+
+# 14B.2 — Smaller Nova hero portrait on Welcome screen
+
+Follow-up layout tweak on the welcome screen: after 14B.1 centred the portrait,
+it was too large. This makes it visibly smaller while keeping it centred and
+showing more of the original art.
+
+## What changed (`ui/screens/onboarding/WelcomeScreen.kt`)
+- Hero zoom reduced from the 14B.1 value (0.5 / centre ≈ 1.41×) to a fixed
+  `HERO_ZOOM = 1.15×` — the portrait is ~18 % smaller (within the requested
+  15–25 %), so more of the original portrait is visible instead of a tight
+  crop.
+- Horizontal centring is now done with an explicit right shift
+  (`translationX = width × (0.5 − centre × zoom)`), so the face stays exactly
+  at screen centre at the smaller size. Because the smaller portrait no longer
+  reaches the box's left edge, a soft navy horizontal fade covers that margin
+  (matches the existing bottom fade — no hard edge).
+- Head-height compensation kept (`translationY`), so the full hair/head stays
+  visible at its original height; more shoulders/upper body are now visible
+  (the bottom crop is much smaller).
+- `HERO_IMAGE_HEIGHT` 470 → 500 dp: extra breathing room between the portrait
+  fade and the NOVA AI COACH text below.
+- Everything remains fractions of the box width (BoxWithConstraints), so the
+  layout stays centred and responsive across screen sizes. Asset, logo,
+  headline, chips, CTA, colours, fonts and other screens unchanged.
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (unchanged suites).
+- On SM-A715F (`adb install -r`, no uninstall, no data cleared): screenshot
+  pixel analysis — head still exactly centred (539 px vs screen centre 540),
+  face rows within ~485–523 px; portrait ~18 % smaller; full hair/head and
+  more shoulders visible; green glow still present on the right; left margin
+  blends smoothly (no hard edge); navy breathing room below the portrait before
+  the logo text; content below the hero intact; no crashes. App remains
+  installed.

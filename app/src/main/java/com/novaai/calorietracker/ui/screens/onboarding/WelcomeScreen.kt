@@ -38,17 +38,24 @@ import com.novaai.calorietracker.ui.theme.*
 
 /** Fixed hero height (rather than the full uncropped aspect ratio) so the screen fits on one page;
  *  paired with the top pivot this only trims the lower shoulder/torso, never the face. */
-private val HERO_IMAGE_HEIGHT = 470.dp
+private val HERO_IMAGE_HEIGHT = 500.dp
 
 /**
  * Horizontal centre of Nova's portrait inside the hero asset (0..1 of its
- * width). The asset places the portrait left-of-centre, so the rendered image
- * is zoomed about its top-left corner (0.5 / centre = zoom, which also puts
- * the portrait at screen centre) and shifted back up vertically so the head
- * keeps its original height. The zoom is responsive: everything is a fraction
- * of the box width.
+ * width). The asset places the portrait left-of-centre; the rendered image is
+ * zoomed by [HERO_ZOOM] and shifted so the portrait itself sits at screen
+ * centre, and pulled back up vertically so the head keeps its original height.
+ * Everything is a fraction of the box width, so it stays centred on any screen
+ * size.
  */
 private const val HERO_PORTRAIT_CENTER = 0.355f
+
+/**
+ * Hero zoom factor. 14B.2: reduced from the 14B.1 value (0.5 / centre ≈ 1.41)
+ * to 1.15, making the portrait ~18 % smaller and showing more of the original
+ * portrait (head, hair and shoulders) instead of a tight crop.
+ */
+private const val HERO_ZOOM = 1.15f
 
 /** Vertical position of the top of Nova's head inside the source, as a fraction
  *  of the source WIDTH (the hero is layout-scaled by width on phones). */
@@ -86,13 +93,13 @@ fun WelcomeScreen(navController: NavController) {
                 .height(HERO_IMAGE_HEIGHT)
                 .clipToBounds()
         ) {
-            // Uniform zoom about the top-left corner: with 0.5/centre as the
-            // zoom factor the portrait lands exactly at screen centre, the left
-            // edge stays covered (no gap) and the right side (incl. the green
-            // glow) overflows and is clipped. The head is pulled back up to its
-            // original height, and everything is a fraction of the width so it
-            // stays centred on any screen size.
-            val heroZoom = 0.5f / HERO_PORTRAIT_CENTER
+            // Uniform zoom + shift: the portrait lands exactly at screen
+            // centre, the right side (incl. the green glow) overflows and is
+            // clipped, and the head is pulled back up to its original height.
+            // The smaller portrait no longer reaches the box's left edge, so a
+            // soft navy fade covers that margin. Everything is a fraction of
+            // the width, so it stays centred on any screen size.
+            val heroGapDp = maxWidth * (0.5f - HERO_PORTRAIT_CENTER * HERO_ZOOM)
             val headTopDp = maxWidth * HERO_HEAD_TOP_SOURCE
             Image(
                 painter = painterResource(R.drawable.nova_hero),
@@ -102,11 +109,22 @@ fun WelcomeScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = heroZoom
-                        scaleY = heroZoom
+                        scaleX = HERO_ZOOM
+                        scaleY = HERO_ZOOM
                         transformOrigin = TransformOrigin(0f, 0f)
-                        translationY = (headTopDp * (1f - heroZoom)).toPx()
+                        translationX = heroGapDp.toPx()
+                        translationY = (headTopDp * (1f - HERO_ZOOM)).toPx()
                     }
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(heroGapDp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(NavyDeep, androidx.compose.ui.graphics.Color.Transparent)
+                        )
+                    )
             )
             Box(
                 modifier = Modifier
