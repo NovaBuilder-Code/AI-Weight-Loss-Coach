@@ -32,6 +32,7 @@ sealed class Screen(val route: String) {
 
     // — Profile sub-screens —
     data object PersonalInfo : Screen("personal_info")
+    data object EditProfile  : Screen("edit_profile")
     data object Goals        : Screen("goals")
     data object Notifications: Screen("notifications")
     data object Privacy      : Screen("privacy")

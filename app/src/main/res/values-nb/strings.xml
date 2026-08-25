@@ -172,6 +172,18 @@
     <string name="unit_lb">lb</string>
     <string name="profile_name_placeholder">Nova-bruker</string>
     <string name="profile_daily_step_goal">Daglig skrittmål: %1$s %2$s</string>
+    <string name="profile_edit_title">Rediger profil</string>
+    <string name="profile_edit_menu_sub">Oppdater personlige detaljer</string>
+    <string name="profile_edit_section_personal">Personlig</string>
+    <string name="profile_edit_section_body">Kropp</string>
+    <string name="profile_edit_section_goals">Mål</string>
+    <string name="profile_edit_label_sex">Kjønn</string>
+    <string name="profile_edit_label_height">Høyde</string>
+    <string name="profile_edit_label_weight">Nåværende vekt</string>
+    <string name="profile_edit_label_goal_weight">Målvekt</string>
+    <string name="profile_edit_label_main_goal">Hovedmål</string>
+    <string name="profile_edit_label_activity">Aktivitetsnivå</string>
+    <string name="profile_edit_label_step_goal">Daglig skrittmål</string>
     <string name="profile_signout_dialog_title">Logg ut</string>
     <string name="profile_signout_dialog_message">Er du sikker på at du vil logge ut? Dataene dine er lagret på kontoen din.</string>
 

@@ -2,8 +2,6 @@ package com.novaai.calorietracker.ui.screens.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -42,6 +39,7 @@ import com.novaai.calorietracker.data.UnitConversion
 import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.navigation.Screen
 import com.novaai.calorietracker.ui.components.NovaPrimaryButton
+import com.novaai.calorietracker.ui.components.SelectOptionCard
 import com.novaai.calorietracker.ui.theme.*
 import java.util.Locale
 
@@ -524,57 +522,4 @@ private fun SetupTextField(
         keyboardOptions = keyboardOptions,
         singleLine = true
     )
-}
-
-@Composable
-private fun SelectOptionCard(
-    icon: ImageVector,
-    label: String,
-    subtitle: String? = null,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) GreenPrimary.copy(alpha = 0.12f) else NavyElevated)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) GreenPrimary else NavyBorder,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = if (selected) GreenPrimary else WhiteAlpha60
-        )
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                color = if (selected) GreenPrimary else White
-            )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = WhiteAlpha60
-                )
-            }
-        }
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = GreenPrimary,
-                unselectedColor = WhiteAlpha30
-            )
-        )
-    }
 }

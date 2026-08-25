@@ -85,6 +85,35 @@ class UserProfileStoreTest {
     }
 
     @Test
+    fun editedFieldsUpdateWhileOthersStay() {
+        UserProfileStore.save(context, sampleProfile)
+        // Exactly what the Edit Profile screen does: merge changed fields
+        // into the stored profile and save it back.
+        UserProfileStore.save(
+            context,
+            UserProfileStore.load(context).copy(
+                name = "Sam",
+                age = 41,
+                currentWeightKg = 71.5f,
+                activityLevel = ActivityLevel.VERY_ACTIVE,
+                dailyStepGoal = 12_000
+            )
+        )
+        val edited = UserProfileStore.load(context)
+        assertEquals("Sam", edited.name)
+        assertEquals(41, edited.age)
+        assertEquals(71.5f, edited.currentWeightKg)
+        assertEquals(ActivityLevel.VERY_ACTIVE, edited.activityLevel)
+        assertEquals(12_000, edited.dailyStepGoal)
+        // Unchanged fields must survive the edit.
+        assertEquals(sampleProfile.sex, edited.sex)
+        assertEquals(sampleProfile.heightCm, edited.heightCm)
+        assertEquals(sampleProfile.goalWeightKg, edited.goalWeightKg)
+        assertEquals(sampleProfile.mainGoal, edited.mainGoal)
+        assertEquals(sampleProfile.units, edited.units)
+    }
+
+    @Test
     fun clearRemovesEverySavedField() {
         UserProfileStore.save(context, sampleProfile)
         UserProfileStore.clear(context)

@@ -13,6 +13,7 @@ import com.novaai.calorietracker.ui.screens.meals.MealSuggestionsScreen
 import com.novaai.calorietracker.ui.screens.onboarding.ProfileSetupScreen
 import com.novaai.calorietracker.ui.screens.onboarding.WelcomeScreen
 import com.novaai.calorietracker.ui.screens.profile.AboutScreen
+import com.novaai.calorietracker.ui.screens.profile.EditProfileScreen
 import com.novaai.calorietracker.ui.screens.profile.GoalsScreen
 import com.novaai.calorietracker.ui.screens.profile.HelpSupportScreen
 import com.novaai.calorietracker.ui.screens.profile.NotificationsScreen
@@ -84,6 +85,9 @@ fun NovaNavGraph(navController: NavHostController) {
         // Profile sub-screens
         composable(Screen.PersonalInfo.route) {
             PersonalInfoScreen(navController = navController)
+        }
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(navController = navController)
         }
         composable(Screen.Goals.route) {
             GoalsScreen(navController = navController)

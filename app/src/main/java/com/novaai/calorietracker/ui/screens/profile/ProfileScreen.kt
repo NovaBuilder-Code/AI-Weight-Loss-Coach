@@ -42,6 +42,9 @@ fun ProfileScreen(navController: NavController) {
         ProfileMenuItemData(Icons.Default.Person, stringResource(R.string.profile_item_personal_info), stringResource(R.string.profile_item_personal_info_sub)) {
             navController.navigate(Screen.PersonalInfo.route)
         },
+        ProfileMenuItemData(Icons.Default.Edit, stringResource(R.string.profile_edit_title), stringResource(R.string.profile_edit_menu_sub)) {
+            navController.navigate(Screen.EditProfile.route)
+        },
         ProfileMenuItemData(Icons.Default.Flag, stringResource(R.string.profile_item_goals), stringResource(R.string.profile_item_goals_sub)) {
             navController.navigate(Screen.Goals.route)
         },

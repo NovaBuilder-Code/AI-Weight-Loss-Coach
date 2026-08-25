@@ -3,6 +3,7 @@ package com.novaai.calorietracker.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -268,6 +269,63 @@ fun NovaAvatar(
             contentScale = ContentScale.Crop,
             alignment = Alignment.TopCenter,
             modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+/**
+ * Selectable option card with icon, label, optional description and radio
+ * indicator — used by onboarding and the profile edit form.
+ */
+@Composable
+fun SelectOptionCard(
+    icon: ImageVector,
+    label: String,
+    subtitle: String? = null,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) GreenPrimary.copy(alpha = 0.12f) else NavyElevated)
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) GreenPrimary else NavyBorder,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (selected) GreenPrimary else WhiteAlpha60
+        )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                color = if (selected) GreenPrimary else White
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = WhiteAlpha60
+                )
+            }
+        }
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = GreenPrimary,
+                unselectedColor = WhiteAlpha30
+            )
         )
     }
 }
