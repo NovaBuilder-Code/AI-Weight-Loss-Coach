@@ -51,4 +51,24 @@ class ProfileValidationTest {
         assertFalse(ProfileValidation.validStepGoal(100_001))
         assertFalse(ProfileValidation.validStepGoal(0))
     }
+
+    @Test
+    fun imperialHeightConvertedToCmUsesOnboardingRange() {
+        // 5 ft 9 in = 175.26 cm (the saved profile height) — valid.
+        assertTrue(ProfileValidation.validHeightCm(UnitConversion.feetInchesToCm(5, 9f)))
+        // 3 ft 0 in = 91.44 cm — valid lower boundary.
+        assertTrue(ProfileValidation.validHeightCm(UnitConversion.feetInchesToCm(3, 0f)))
+        // 2 ft 11 in = 88.9 cm — below the 90 cm minimum.
+        assertFalse(ProfileValidation.validHeightCm(UnitConversion.feetInchesToCm(2, 11f)))
+    }
+
+    @Test
+    fun imperialWeightConvertedToKgUsesOnboardingRange() {
+        // 154 lb ≈ 69.85 kg (the saved profile weight) — valid.
+        assertTrue(ProfileValidation.validWeightKg(UnitConversion.lbToKg(154f)))
+        // 300 lb ≈ 136 kg — within the 300 kg ceiling.
+        assertTrue(ProfileValidation.validWeightKg(UnitConversion.lbToKg(300f)))
+        // 700 lb ≈ 317.5 kg — above the 300 kg ceiling.
+        assertFalse(ProfileValidation.validWeightKg(UnitConversion.lbToKg(700f)))
+    }
 }

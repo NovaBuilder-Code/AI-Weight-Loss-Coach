@@ -84,3 +84,45 @@ to 0 (the shared decimal validation required > 0).
   + relaunch → Goals still shows 0; negative value (-1) rejected (not saved).
   Calories/steps/water/weight values unchanged. App remains installed, no
   data cleared, no crashes.
+
+---
+
+# Task 13D — Personal Info screen connected to the saved UserProfile
+
+The Profile → Personal Info screen showed fake/demo data ("Alex Johnson",
+"alex@email.com", 29, 175, 74.2) with a non-persisting snackbar save. It now
+loads, edits and saves the real saved onboarding/Edit-Profile profile through
+the existing `UserProfileStore` (single source of truth).
+
+## What changed
+- `ui/screens/profile/PersonalInfoScreen.kt` — rewritten:
+  - All demo values removed (including the fake email, which does not exist in
+    `UserProfile`; no invented storage was added).
+  - Loads the saved profile via `UserProfileStore.load` into `rememberSaveable`
+    state; avatar initial reflects the real name.
+  - Edits the personal fields that exist in `UserProfile`: name, age, sex
+    (Male/Female `SelectOptionCard`), height, current weight.
+  - Saves with `UserProfileStore.save(context, load(context).copy(...))` then
+    pops back — updates flow everywhere else that reads the profile (Profile
+    header, Edit Profile, Home calorie target, Goals).
+  - Unit handling matches Edit Profile: metric cm/kg vs imperial ft+in/lb,
+    converted to canonical metric before saving.
+  - Reuses `ProfileValidation` (validName/validAge/validHeightCm/validWeightKg)
+    and the onboarding range constants/error strings — no new/conflicting
+    validation.
+- `test/.../ProfileValidationTest.kt` — 2 new tests tying the form's imperial
+  conversions to the reused validation rules (5 ft 9 in → 175.26 cm valid;
+  2 ft 11 in → 88.9 cm invalid; 154 lb → 69.85 kg valid; 700 lb → 317.5 kg
+  invalid).
+
+## Verification
+- `assembleDebug` green; `testDebugUnitTest` green (7 ProfileValidation tests,
+  +2 new).
+- On SM-A715F: Personal Info shows the real profile (Alex, 34, Female,
+  5 ft 9 in, 154 lb) — no demo data. Edited Current Weight 154 → 155 lb →
+  `user_profile.xml` `current_weight_kg` updated to 70.31; Profile screen shows
+  155 lb; Home calorie target recalculated 1814 → 1820 kcal (proves the change
+  propagates to everything that uses the profile); force-close + relaunch →
+  still 155 lb. Then restored Current Weight to 154 lb (69.85 kg). All other
+  fields, Goals values (steps 10,000, goal weight, sleep 0.0) unchanged. App
+  remains installed (in-place upgrade), no data cleared, no crashes.
