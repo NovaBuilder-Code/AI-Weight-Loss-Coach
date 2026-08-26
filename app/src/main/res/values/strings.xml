@@ -254,6 +254,9 @@
     <string name="scan_food_snackbar_photo_captured">Photo captured</string>
     <string name="scan_food_choose_another">Choose another photo</string>
     <string name="scan_food_preview_description">Selected food photo</string>
+    <string name="scan_food_log">Log Food</string>
+    <string name="scan_food_logged">Logged</string>
+    <string name="scan_food_logged_snackbar">Added to today\'s calories</string>
 
     <!-- Placeholder screens -->
     <string name="placeholder_calorie_tracker_title">Calorie Tracker</string>

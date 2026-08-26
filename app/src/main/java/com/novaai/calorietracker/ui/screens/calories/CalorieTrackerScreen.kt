@@ -31,7 +31,15 @@ import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
 
-private data class MealEntry(val name: String, val type: String, val kcal: Int, val date: String)
+private data class MealEntry(
+    val name: String,
+    val type: String,
+    val kcal: Int,
+    val date: String,
+    val proteinG: Double = 0.0,
+    val carbsG: Double = 0.0,
+    val fatG: Double = 0.0
+)
 
 private const val BURNED = 340
 
@@ -42,11 +50,18 @@ fun CalorieTrackerScreen(navController: NavController) {
 
     val meals = remember {
         mutableStateListOf<MealEntry>().apply {
-            addAll(CalorieStore.loadTodayMeals(context).map { MealEntry(it.name, typeSnack, it.kcal, it.date) })
+            addAll(
+                CalorieStore.loadTodayMeals(context).map {
+                    MealEntry(it.name, typeSnack, it.kcal, it.date, it.proteinG, it.carbsG, it.fatG)
+                }
+            )
         }
     }
 
-    fun persist() = CalorieStore.saveMeals(context, meals.map { StoredMeal(it.name, it.kcal, it.date) })
+    fun persist() = CalorieStore.saveMeals(
+        context,
+        meals.map { StoredMeal(it.name, it.kcal, it.date, it.proteinG, it.carbsG, it.fatG) }
+    )
 
     var showAddDialog by remember { mutableStateOf(false) }
     val consumed = meals.sumOf { it.kcal }
@@ -89,6 +104,7 @@ fun CalorieTrackerScreen(navController: NavController) {
                 name = meal.name,
                 type = meal.type,
                 kcal = meal.kcal,
+                macros = CalorieStore.formatMacros(meal.proteinG, meal.carbsG, meal.fatG),
                 onDelete = {
                     meals.removeAt(index)
                     persist()
@@ -177,7 +193,7 @@ private fun CalorieSummary(consumed: Int, dailyGoal: Int) {
 }
 
 @Composable
-private fun MealRow(name: String, type: String, kcal: Int, onDelete: () -> Unit) {
+private fun MealRow(name: String, type: String, kcal: Int, macros: String, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,7 +220,11 @@ private fun MealRow(name: String, type: String, kcal: Int, onDelete: () -> Unit)
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(name, style = MaterialTheme.typography.titleMedium)
-            Text(type, style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
+            Text(
+                text = if (macros.isEmpty()) type else "$type · $macros",
+                style = MaterialTheme.typography.bodySmall,
+                color = WhiteAlpha60
+            )
         }
         Text(
             text = "$kcal ${stringResource(R.string.kcal)}",

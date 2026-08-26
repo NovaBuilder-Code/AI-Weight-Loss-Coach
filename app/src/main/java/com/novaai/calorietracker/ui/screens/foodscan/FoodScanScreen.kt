@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.CalorieStore
 import com.novaai.calorietracker.data.FoodItem
 import com.novaai.calorietracker.data.FoodScanOutcome
 import com.novaai.calorietracker.data.FoodScanResult
@@ -71,6 +72,7 @@ fun FoodScanScreen(navController: NavController) {
     val errorTimeout = stringResource(R.string.scan_food_error_timeout)
     val errorNetwork = stringResource(R.string.scan_food_error_network)
     val errorServer = stringResource(R.string.scan_food_error_server)
+    val loggedMessage = stringResource(R.string.scan_food_logged_snackbar)
 
     fun showMessage(msg: String) {
         scope.launch { snackbarHostState.showSnackbar(msg) }
@@ -82,6 +84,7 @@ fun FoodScanScreen(navController: NavController) {
     var analyzing by remember { mutableStateOf(false) }
     var scanResult by remember { mutableStateOf<FoodScanResult?>(null) }
     var noFood by remember { mutableStateOf(false) }
+    var logged by remember { mutableStateOf(false) }
 
     LaunchedEffect(previewUri) {
         previewBitmap = previewUri?.let { uri ->
@@ -93,6 +96,7 @@ fun FoodScanScreen(navController: NavController) {
         analyzing = false
         scanResult = null
         noFood = false
+        logged = false
     }
 
     fun analyzePhoto() {
@@ -101,6 +105,7 @@ fun FoodScanScreen(navController: NavController) {
         analyzing = true
         scanResult = null
         noFood = false
+        logged = false
         scope.launch {
             val outcome = withContext(Dispatchers.IO) {
                 val jpeg = compressJpeg(bitmap.asAndroidBitmap())
@@ -115,6 +120,14 @@ fun FoodScanScreen(navController: NavController) {
                 FoodScanOutcome.ServerError -> showMessage(errorServer)
             }
         }
+    }
+
+    fun logScanFoods() {
+        val result = scanResult ?: return
+        if (logged) return
+        CalorieStore.logScanResult(context, result)
+        logged = true
+        showMessage(loggedMessage)
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -251,7 +264,7 @@ fun FoodScanScreen(navController: NavController) {
                     val result = scanResult
                     if (result != null) {
                         Spacer(Modifier.height(16.dp))
-                        FoodScanResultCard(result)
+                        FoodScanResultCard(result = result, logged = logged) { logScanFoods() }
                     } else if (noFood) {
                         Spacer(Modifier.height(16.dp))
                         Column(
@@ -339,7 +352,11 @@ fun FoodScanScreen(navController: NavController) {
 
 /** Card showing the AI-estimated foods, total and disclaimer. */
 @Composable
-private fun FoodScanResultCard(result: FoodScanResult) {
+private fun FoodScanResultCard(
+    result: FoodScanResult,
+    logged: Boolean,
+    onLog: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -408,6 +425,29 @@ private fun FoodScanResultCard(result: FoodScanResult) {
             color = WhiteAlpha60,
             fontSize = 12.sp
         )
+
+        Spacer(Modifier.height(14.dp))
+
+        Button(
+            onClick = onLog,
+            enabled = !logged,
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = GreenPrimary,
+                contentColor = NavyDeep,
+                disabledContainerColor = GreenDim,
+                disabledContentColor = WhiteAlpha60
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Text(
+                text = stringResource(if (logged) R.string.scan_food_logged else R.string.scan_food_log),
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+        }
     }
 }
 
