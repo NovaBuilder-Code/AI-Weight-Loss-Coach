@@ -1,7 +1,18 @@
-﻿.gradle/
+.gradle/
 build/
 app/build/
 local.properties
 .idea/
 .kotlin/
 *.apk
+
+# Secrets and local credentials
+.env
+.env.*
+secrets.properties
+*.jks
+*.keystore
+
+# Cloudflare Wrangler local cache / account
+**/.wrangler/
+wrangler-account.json
