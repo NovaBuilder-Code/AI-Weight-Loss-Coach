@@ -14,10 +14,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -71,6 +72,7 @@ fun FoodScanScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val listState = rememberLazyListState()
 
     val photoSelected = stringResource(R.string.scan_food_snackbar_photo_selected)
     val photoCaptured = stringResource(R.string.scan_food_snackbar_photo_captured)
@@ -91,7 +93,49 @@ fun FoodScanScreen(navController: NavController) {
     var scanResult by remember { mutableStateOf<FoodScanResult?>(null) }
     var noFood by remember { mutableStateOf(false) }
     var logged by remember { mutableStateOf(false) }
+    var analyzeError by remember { mutableStateOf<String?>(null) }
     var analyzeGeneration by remember { mutableIntStateOf(0) }
+
+    fun resetScanState() {
+        analyzeGeneration++
+        analyzing = false
+        scanResult = null
+        noFood = false
+        logged = false
+        analyzeError = null
+    }
+
+    fun clearPhoto() {
+        resetScanState()
+        previewUri = null
+    }
+
+    fun analyzePhoto(bitmapOverride: ImageBitmap? = null) {
+        val bitmap = bitmapOverride ?: previewBitmap ?: return
+        if (analyzing) return
+        analyzing = true
+        scanResult = null
+        noFood = false
+        logged = false
+        analyzeError = null
+        val gen = analyzeGeneration
+        scope.launch {
+            val outcome = withContext(Dispatchers.IO) {
+                val jpeg = compressJpeg(bitmap.asAndroidBitmap())
+                if (jpeg == null) null else FoodScanService.analyze(jpeg)
+            }
+            if (gen != analyzeGeneration) return@launch
+            analyzing = false
+            when (outcome) {
+                null -> analyzeError = errorImage
+                is FoodScanOutcome.Success ->
+                    if (outcome.result.foods.isEmpty()) noFood = true else scanResult = outcome.result
+                FoodScanOutcome.Timeout -> analyzeError = errorTimeout
+                FoodScanOutcome.NetworkError -> analyzeError = errorNetwork
+                FoodScanOutcome.ServerError -> analyzeError = errorServer
+            }
+        }
+    }
 
     LaunchedEffect(previewUri) {
         val uri = previewUri
@@ -106,45 +150,14 @@ fun FoodScanScreen(navController: NavController) {
             showMessage(errorImage)
         } else {
             previewBitmap = decoded
+            analyzePhoto(decoded)
         }
     }
 
-    fun resetScanState() {
-        analyzeGeneration++
-        analyzing = false
-        scanResult = null
-        noFood = false
-        logged = false
-    }
-
-    fun clearPhoto() {
-        resetScanState()
-        previewUri = null
-    }
-
-    fun analyzePhoto() {
-        val bitmap = previewBitmap ?: return
-        if (analyzing) return
-        analyzing = true
-        scanResult = null
-        noFood = false
-        logged = false
-        val gen = analyzeGeneration
-        scope.launch {
-            val outcome = withContext(Dispatchers.IO) {
-                val jpeg = compressJpeg(bitmap.asAndroidBitmap())
-                if (jpeg == null) null else FoodScanService.analyze(jpeg)
-            }
-            if (gen != analyzeGeneration) return@launch
-            analyzing = false
-            when (outcome) {
-                null -> showMessage(errorImage)
-                is FoodScanOutcome.Success ->
-                    if (outcome.result.foods.isEmpty()) noFood = true else scanResult = outcome.result
-                FoodScanOutcome.Timeout -> showMessage(errorTimeout)
-                FoodScanOutcome.NetworkError -> showMessage(errorNetwork)
-                FoodScanOutcome.ServerError -> showMessage(errorServer)
-            }
+    val statusIndex = 1
+    LaunchedEffect(scanResult, noFood, analyzeError, analyzing) {
+        if (previewUri != null && (scanResult != null || noFood || analyzeError != null || analyzing)) {
+            listState.scrollToItem(statusIndex)
         }
     }
 
@@ -204,191 +217,244 @@ fun FoodScanScreen(navController: NavController) {
                 onBack = { navController.popBackStack() }
             )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 28.dp),
+            val bitmap = previewBitmap
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = if (previewUri == null) Arrangement.Center else Arrangement.Top
             ) {
-                val bitmap = previewBitmap
                 if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = stringResource(R.string.scan_food_preview_description),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(4f / 3f)
-                            .clip(RoundedCornerShape(20.dp))
-                            .border(1.dp, NavyBorder, RoundedCornerShape(20.dp))
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    TextButton(onClick = { clearPhoto() }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = null,
-                            tint = GreenPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = stringResource(R.string.scan_food_choose_another),
-                            color = GreenPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Button(
-                        onClick = { analyzePhoto() },
-                        enabled = !analyzing,
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = GreenPrimary,
-                            contentColor = NavyDeep,
-                            disabledContainerColor = GreenDim
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                    ) {
-                        if (analyzing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = NavyDeep,
-                                strokeWidth = 2.5.dp
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Text(
-                                text = stringResource(R.string.scan_food_analyzing),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Text(
-                                text = stringResource(R.string.scan_food_analyze),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-
-                    val result = scanResult
-                    if (result != null) {
-                        Spacer(Modifier.height(16.dp))
-                        FoodScanResultCard(
-                            result = result,
-                            logged = logged,
-                            onLog = { logScanFoods(it) },
-                            onScanAnother = { clearPhoto() }
-                        )
-                    } else if (noFood) {
-                        Spacer(Modifier.height(16.dp))
-                        Column(
+                    item(key = "photo") {
+                        val compact = analyzing || scanResult != null || noFood || analyzeError != null
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = stringResource(R.string.scan_food_preview_description),
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(NavySurface)
-                                .border(1.dp, NavyBorder, RoundedCornerShape(20.dp))
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = stringResource(R.string.scan_food_no_food),
-                                color = WhiteAlpha80,
-                                textAlign = TextAlign.Center,
-                                fontSize = 14.sp
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            OutlinedButton(
-                                onClick = { clearPhoto() },
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = White),
-                                border = BorderStroke(1.dp, NavyBorder),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.scan_food_scan_another),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
+                                .then(
+                                    if (compact) Modifier.height(140.dp)
+                                    else Modifier.aspectRatio(4f / 3f)
                                 )
-                            }
+                                .clip(RoundedCornerShape(20.dp))
+                                .border(1.dp, NavyBorder, RoundedCornerShape(20.dp))
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        TextButton(onClick = { clearPhoto() }) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = GreenPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.scan_food_choose_another),
+                                color = GreenPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
+                        Spacer(Modifier.height(8.dp))
                     }
 
-                    Spacer(Modifier.height(20.dp))
+                    item(key = "status") {
+                        when {
+                            analyzing -> FoodScanAnalyzingCard()
+                            analyzeError != null -> FoodScanErrorCard(
+                                message = analyzeError!!,
+                                onRetry = { analyzePhoto() }
+                            )
+                            scanResult != null -> FoodScanResultCard(
+                                result = scanResult!!,
+                                logged = logged,
+                                onLog = { logScanFoods(it) },
+                                onScanAnother = { clearPhoto() }
+                            )
+                            noFood -> FoodScanNoFoodCard(onScanAnother = { clearPhoto() })
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
                 } else {
-                    NovaAvatar(size = 96.dp)
-
-                    Spacer(Modifier.height(24.dp))
-
-                    Text(
-                        text = stringResource(R.string.scan_food_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = WhiteAlpha60,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(Modifier.height(32.dp))
-                }
-
-                Button(
-                    onClick = { launchCamera() },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GreenPrimary,
-                        contentColor = NavyDeep
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(10.dp))
-                    Text(text = stringResource(R.string.scan_food_take_photo), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                OutlinedButton(
-                    onClick = {
-                        galleryLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    item(key = "empty") {
+                        NovaAvatar(size = 96.dp)
+                        Spacer(Modifier.height(24.dp))
+                        Text(
+                            text = stringResource(R.string.scan_food_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = WhiteAlpha60,
+                            textAlign = TextAlign.Center
                         )
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = White),
-                    border = BorderStroke(1.dp, NavyBorder),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(10.dp))
-                    Text(text = stringResource(R.string.scan_food_upload_gallery), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(Modifier.height(32.dp))
+                    }
                 }
 
-                Spacer(Modifier.height(20.dp))
-
-                Text(
-                    text = stringResource(R.string.scan_food_helper),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = WhiteAlpha30,
-                    textAlign = TextAlign.Center
-                )
+                if (bitmap == null) {
+                    item(key = "camera") {
+                        Button(
+                            onClick = { launchCamera() },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = GreenPrimary,
+                                contentColor = NavyDeep
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(text = stringResource(R.string.scan_food_take_photo), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    item(key = "gallery") {
+                        OutlinedButton(
+                            onClick = {
+                                galleryLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = White),
+                            border = BorderStroke(1.dp, NavyBorder),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(text = stringResource(R.string.scan_food_upload_gallery), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
+                        Spacer(Modifier.height(20.dp))
+                    }
+                    item(key = "helper") {
+                        Text(
+                            text = stringResource(R.string.scan_food_helper),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = WhiteAlpha30,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(20.dp))
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun FoodScanAnalyzingCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(NavySurface)
+            .border(1.dp, GreenPrimary.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 20.dp, vertical = 28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(40.dp),
+            color = GreenPrimary,
+            strokeWidth = 3.dp
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                tint = GreenPrimary,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.scan_food_analyzing),
+                color = White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun FoodScanErrorCard(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(NavySurface)
+            .border(1.dp, ErrorRed.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            color = White,
+            textAlign = TextAlign.Center,
+            fontSize = 15.sp
+        )
+        Spacer(Modifier.height(14.dp))
+        Button(
+            onClick = onRetry,
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = GreenPrimary,
+                contentColor = NavyDeep
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.scan_food_retry),
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun FoodScanNoFoodCard(onScanAnother: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(NavySurface)
+            .border(1.dp, NavyBorder, RoundedCornerShape(20.dp))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.scan_food_no_food),
+            color = WhiteAlpha80,
+            textAlign = TextAlign.Center,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onScanAnother,
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = White),
+            border = BorderStroke(1.dp, NavyBorder),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.scan_food_scan_another),
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
         }
     }
 }
@@ -410,21 +476,22 @@ private fun FoodScanResultCard(
     val totalProtein = parsedFoods?.sumOf { it.proteinG }
     val totalCarbs = parsedFoods?.sumOf { it.carbsG }
     val totalFat = parsedFoods?.sumOf { it.fatG }
+    val multiple = result.foods.size > 1
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(NavySurface)
-            .border(1.dp, NavyBorder, RoundedCornerShape(20.dp))
+            .border(1.dp, GreenPrimary.copy(alpha = 0.45f), RoundedCornerShape(20.dp))
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.scan_food_result_title),
+                text = stringResource(R.string.scan_food_result_heading),
                 color = White,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 18.sp
             )
             Spacer(Modifier.weight(1f))
             Text(
@@ -440,58 +507,86 @@ private fun FoodScanResultCard(
             )
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
         if (logged) {
-            result.foods.forEach { food ->
-                FoodRow(food)
-                Spacer(Modifier.height(12.dp))
+            result.foods.forEachIndexed { index, food ->
+                if (index > 0) {
+                    Spacer(Modifier.height(12.dp))
+                    ScanCardDivider()
+                    Spacer(Modifier.height(12.dp))
+                }
+                NutritionFactsBlock(
+                    name = food.name,
+                    caloriesValue = food.calories.toString(),
+                    proteinValue = formatGrams(food.proteinG),
+                    carbsValue = formatGrams(food.carbsG),
+                    fatValue = formatGrams(food.fatG),
+                    portionValue = food.estimatedPortion
+                )
             }
         } else {
             drafts.forEachIndexed { index, draft ->
+                if (index > 0) {
+                    Spacer(Modifier.height(12.dp))
+                    ScanCardDivider()
+                    Spacer(Modifier.height(12.dp))
+                }
+                NutritionFactsBlock(
+                    name = draft.name,
+                    caloriesValue = draft.calories,
+                    proteinValue = draft.proteinG,
+                    carbsValue = draft.carbsG,
+                    fatValue = draft.fatG,
+                    portionValue = draft.estimatedPortion
+                )
+                Spacer(Modifier.height(12.dp))
                 EditableFoodRow(
                     draft = draft,
                     onChange = { updated ->
                         drafts = drafts.toMutableList().also { it[index] = updated }
                     }
                 )
-                Spacer(Modifier.height(12.dp))
             }
         }
 
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(NavyBorder)
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (multiple) {
+            Spacer(Modifier.height(16.dp))
+            ScanCardDivider()
+            Spacer(Modifier.height(16.dp))
             Text(
-                text = stringResource(R.string.scan_food_result_total),
-                color = WhiteAlpha80,
+                text = stringResource(R.string.scan_food_meal_totals),
+                color = GreenLight,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp
+                fontSize = 11.sp,
+                letterSpacing = 0.8.sp
             )
-            Spacer(Modifier.weight(1f))
             Text(
-                text = "$totalCalories kcal",
+                text = stringResource(R.string.scan_food_kcal_value, totalCalories),
                 color = GreenPrimary,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 32.sp
             )
-        }
-
-        if (totalProtein != null && totalCarbs != null && totalFat != null) {
-            Text(
-                text = "${formatGrams(totalProtein)} g protein · " +
-                    "${formatGrams(totalCarbs)} g carbs · ${formatGrams(totalFat)} g fat",
-                color = WhiteAlpha60,
-                fontSize = 12.sp,
-                modifier = Modifier.align(Alignment.End)
-            )
+            if (totalProtein != null && totalCarbs != null && totalFat != null) {
+                Spacer(Modifier.height(4.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    MacroColumn(
+                        label = stringResource(R.string.scan_food_label_protein),
+                        value = stringResource(R.string.scan_food_grams, formatGrams(totalProtein)),
+                        modifier = Modifier.weight(1f)
+                    )
+                    MacroColumn(
+                        label = stringResource(R.string.scan_food_label_carbs),
+                        value = stringResource(R.string.scan_food_grams, formatGrams(totalCarbs)),
+                        modifier = Modifier.weight(1f)
+                    )
+                    MacroColumn(
+                        label = stringResource(R.string.scan_food_label_fat),
+                        value = stringResource(R.string.scan_food_grams, formatGrams(totalFat)),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         }
 
         if (!logged && parsedFoods == null) {
@@ -503,7 +598,7 @@ private fun FoodScanResultCard(
             )
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = stringResource(R.string.scan_food_disclaimer),
@@ -528,12 +623,12 @@ private fun FoodScanResultCard(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(52.dp)
         ) {
             Text(
                 text = stringResource(if (logged) R.string.scan_food_logged else R.string.scan_food_log),
                 fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
+                fontSize = 16.sp
             )
         }
 
@@ -558,38 +653,127 @@ private fun FoodScanResultCard(
 }
 
 @Composable
-private fun FoodRow(food: FoodItem) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
+private fun ScanCardDivider() {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(NavyBorder)
+    )
+}
+
+@Composable
+private fun NutritionFactsBlock(
+    name: String,
+    caloriesValue: String,
+    proteinValue: String,
+    carbsValue: String,
+    fatValue: String,
+    portionValue: String
+) {
+    val caloriesInt = caloriesValue.trim().toIntOrNull()
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.scan_food_label_detected),
+            color = GreenLight,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.sp,
+            letterSpacing = 0.8.sp
+        )
+        Text(
+            text = name.ifBlank { "—" },
+            color = White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.scan_food_label_calories),
+            color = GreenLight,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.sp,
+            letterSpacing = 0.8.sp
+        )
+        Text(
+            text = if (caloriesInt != null) {
+                stringResource(R.string.scan_food_kcal_value, caloriesInt)
+            } else {
+                caloriesValue.ifBlank { "—" }
+            },
+            color = GreenPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 36.sp
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            MacroColumn(
+                label = stringResource(R.string.scan_food_label_protein),
+                value = gramsOrRaw(proteinValue),
+                modifier = Modifier.weight(1f)
+            )
+            MacroColumn(
+                label = stringResource(R.string.scan_food_label_carbs),
+                value = gramsOrRaw(carbsValue),
+                modifier = Modifier.weight(1f)
+            )
+            MacroColumn(
+                label = stringResource(R.string.scan_food_label_fat),
+                value = gramsOrRaw(fatValue),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        if (portionValue.isNotBlank()) {
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = food.name,
+                text = stringResource(R.string.scan_food_label_portion),
+                color = GreenLight,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                letterSpacing = 0.8.sp
+            )
+            Text(
+                text = portionValue,
                 color = White,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp
-            )
-            if (food.estimatedPortion.isNotEmpty()) {
-                Text(
-                    text = food.estimatedPortion,
-                    color = WhiteAlpha60,
-                    fontSize = 13.sp
-                )
-            }
-        }
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = "${food.calories} kcal",
-                color = White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-            Text(
-                text = "${formatGrams(food.proteinG)} g protein · " +
-                    "${formatGrams(food.carbsG)} g carbs · ${formatGrams(food.fatG)} g fat",
-                color = WhiteAlpha60,
-                fontSize = 12.sp
+                fontSize = 16.sp
             )
         }
     }
+}
+
+@Composable
+private fun MacroColumn(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            color = GreenLight,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.sp,
+            letterSpacing = 0.8.sp
+        )
+        Text(
+            text = value,
+            color = White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp
+        )
+    }
+}
+
+@Composable
+private fun gramsOrRaw(value: String): String {
+    val trimmed = value.trim()
+    if (trimmed.isEmpty()) return "—"
+    val parsed = trimmed.toDoubleOrNull()
+    return if (parsed != null) stringResource(R.string.scan_food_grams, formatGrams(parsed))
+    else trimmed
 }
 
 @Composable
