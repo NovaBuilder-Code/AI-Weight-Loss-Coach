@@ -113,4 +113,48 @@ class CalorieStoreLogTest {
         val twice = CalorieStore.appendLoggedFoods(once, scanMeals)
         assertEquals(once, twice)
     }
+
+    @Test
+    fun mealsFromScanLogsEditedValuesNotRawAiNumbers() {
+        val original = scanResult(listOf(chicken), 250)
+        val drafts = listOf(
+            FoodEditDraft("chicken breast", "180 g", "300", "50", "2", "9")
+        )
+        val edited = FoodScanEdit.resultFromDrafts(original, drafts)!!
+        val meals = CalorieStore.mealsFromScan(edited, "2026-08-27")
+        assertEquals(1, meals.size)
+        assertEquals("chicken breast", meals[0].name)
+        assertEquals(300, meals[0].kcal)
+        assertEquals(50.0, meals[0].proteinG, 0.0)
+        assertEquals(2.0, meals[0].carbsG, 0.0)
+        assertEquals(9.0, meals[0].fatG, 0.0)
+    }
+
+    @Test
+    fun loggingSameEditedScanTwiceAddsNothingSecondTime() {
+        val original = scanResult(listOf(chicken), 250)
+        val edited = FoodScanEdit.resultFromDrafts(
+            original,
+            listOf(FoodEditDraft("chicken breast", "180 g", "300", "50", "2", "9"))
+        )!!
+        val meals = CalorieStore.mealsFromScan(edited, "2026-08-27")
+        val once = CalorieStore.appendLoggedFoods(emptyList(), meals)
+        val twice = CalorieStore.appendLoggedFoods(once, meals)
+        assertEquals(1, twice.size)
+        assertEquals(300, twice[0].kcal)
+    }
+
+    @Test
+    fun editedThenRawAiScanAreNotTreatedAsDuplicates() {
+        val original = scanResult(listOf(chicken), 250)
+        val edited = FoodScanEdit.resultFromDrafts(
+            original,
+            listOf(FoodEditDraft.from(chicken).copy(calories = "300"))
+        )!!
+        val editedMeals = CalorieStore.mealsFromScan(edited, "2026-08-27")
+        val rawMeals = CalorieStore.mealsFromScan(original, "2026-08-27")
+        val updated = CalorieStore.appendLoggedFoods(editedMeals, rawMeals)
+        assertEquals(2, updated.size)
+        assertEquals(listOf(300, 250), updated.map { it.kcal })
+    }
 }

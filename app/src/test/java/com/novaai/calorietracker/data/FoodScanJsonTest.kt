@@ -59,6 +59,15 @@ class FoodScanJsonTest {
     }
 
     @Test
+    fun defaultDisclaimerIsTheRequiredUserFacingText() {
+        assertEquals(
+            "AI estimates may be inaccurate. Adjust portions or values if needed.",
+            FoodScanEdit.DISCLAIMER
+        )
+        assertEquals(FoodScanEdit.DISCLAIMER, FoodScanJson.DEFAULT_DISCLAIMER)
+    }
+
+    @Test
     fun totalCaloriesFallsBackToSumOfFoods() {
         val result = FoodScanJson.parseScanResult(
             """{"foods":[{"name":"a","calories":100},{"name":"b","calories":50}],"confidence":"high"}"""
@@ -126,5 +135,101 @@ class FoodScanJsonTest {
         assertEquals(false, list[1])
         assertEquals(null, list[2])
         assertEquals("x", value["c"])
+    }
+
+    private val chicken = FoodItem("grilled chicken", "150 g", 250, 40.0, 0.0, 8.0)
+
+    private fun originalResult(foods: List<FoodItem>, total: Int) = FoodScanResult(
+        foods = foods,
+        totalCalories = total,
+        confidence = "medium",
+        disclaimer = "stale AI disclaimer"
+    )
+
+    @Test
+    fun parseDraftAcceptsValidNutrition() {
+        val item = FoodScanEdit.parseDraft(FoodEditDraft.from(chicken))
+        assertEquals(chicken, item)
+    }
+
+    @Test
+    fun parseDraftTrimsNameAndPortion() {
+        val item = FoodScanEdit.parseDraft(
+            FoodEditDraft("  chicken  ", "  1 cup  ", "100", "10", "5", "2")
+        )
+        assertEquals("chicken", item!!.name)
+        assertEquals("1 cup", item.estimatedPortion)
+        assertEquals(100, item.calories)
+    }
+
+    @Test
+    fun parseDraftRejectsBlankName() {
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(name = "   ")))
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(name = "")))
+    }
+
+    @Test
+    fun parseDraftRejectsNegativeCalories() {
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(calories = "-1")))
+    }
+
+    @Test
+    fun parseDraftRejectsNegativeMacros() {
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(proteinG = "-0.1")))
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(carbsG = "-1")))
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(fatG = "-8")))
+    }
+
+    @Test
+    fun parseDraftRejectsNonNumericValues() {
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(calories = "abc")))
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(proteinG = "")))
+        assertNull(FoodScanEdit.parseDraft(FoodEditDraft.from(chicken).copy(carbsG = "n/a")))
+    }
+
+    @Test
+    fun parseDraftAllowsZeroCaloriesAndMacros() {
+        val item = FoodScanEdit.parseDraft(
+            FoodEditDraft("water", "1 glass", "0", "0", "0", "0")
+        )
+        assertEquals(0, item!!.calories)
+        assertEquals(0.0, item.proteinG, 0.0)
+        assertEquals(0.0, item.carbsG, 0.0)
+        assertEquals(0.0, item.fatG, 0.0)
+    }
+
+    @Test
+    fun resultFromDraftsSumsEditedCaloriesNotStaleScanTotal() {
+        val original = originalResult(
+            listOf(
+                FoodItem("salad", "1 bowl", 120, 4.0, 10.0, 2.0),
+                FoodItem("soup", "1 cup", 180, 8.0, 20.0, 4.0)
+            ),
+            total = 999
+        )
+        val drafts = listOf(
+            FoodEditDraft("salad", "1 bowl", "150", "5", "12", "3"),
+            FoodEditDraft("soup", "1 cup", "200", "9", "22", "5")
+        )
+        val edited = FoodScanEdit.resultFromDrafts(original, drafts)!!
+        assertEquals(350, edited.totalCalories)
+        assertEquals(150, edited.foods[0].calories)
+        assertEquals(200, edited.foods[1].calories)
+        assertEquals(5.0, edited.foods[0].proteinG, 0.0)
+        assertEquals(FoodScanEdit.DISCLAIMER, edited.disclaimer)
+        assertEquals("medium", edited.confidence)
+    }
+
+    @Test
+    fun resultFromDraftsReturnsNullWhenAnyItemInvalid() {
+        val original = originalResult(listOf(chicken), 250)
+        val drafts = listOf(FoodEditDraft.from(chicken).copy(name = ""))
+        assertNull(FoodScanEdit.resultFromDrafts(original, drafts))
+    }
+
+    @Test
+    fun parseAllRejectsEmptyFoodsListOnlyWhenADraftIsInvalid() {
+        assertEquals(emptyList<FoodItem>(), FoodScanEdit.parseAll(emptyList()))
+        assertNull(FoodScanEdit.parseAll(listOf(FoodEditDraft.from(chicken).copy(calories = "-5"))))
     }
 }

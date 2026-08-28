@@ -258,6 +258,16 @@
     <string name="scan_food_log">Log Food</string>
     <string name="scan_food_logged">Logged</string>
     <string name="scan_food_logged_snackbar">Added to today\'s calories</string>
+    <string name="scan_food_disclaimer">AI estimates may be inaccurate. Adjust portions or values if needed.</string>
+    <string name="scan_food_scan_another">Scan Another</string>
+    <string name="scan_food_error_image">That photo couldn\'t be read. Try another image.</string>
+    <string name="scan_food_edit_invalid">Name can\'t be blank, and calories and macros must be 0 or more.</string>
+    <string name="scan_food_field_name">Name</string>
+    <string name="scan_food_field_portion">Portion / serving</string>
+    <string name="scan_food_field_calories">Calories</string>
+    <string name="scan_food_field_protein">Protein (g)</string>
+    <string name="scan_food_field_carbs">Carbs (g)</string>
+    <string name="scan_food_field_fat">Fat (g)</string>
 
     <!-- Placeholder screens -->
     <string name="placeholder_calorie_tracker_title">Calorie Tracker</string>

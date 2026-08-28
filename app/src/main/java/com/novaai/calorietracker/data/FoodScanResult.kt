@@ -22,6 +22,89 @@ data class FoodScanResult(
 )
 
 /**
+ * In-progress edit of one [FoodItem] before it is logged. Fields stay strings
+ * so the user can clear a box while typing; [FoodScanEdit.parseDraft] turns
+ * a complete, valid draft into a [FoodItem].
+ */
+data class FoodEditDraft(
+    val name: String,
+    val estimatedPortion: String,
+    val calories: String,
+    val proteinG: String,
+    val carbsG: String,
+    val fatG: String
+) {
+    companion object {
+        fun from(item: FoodItem) = FoodEditDraft(
+            name = item.name,
+            estimatedPortion = item.estimatedPortion,
+            calories = item.calories.toString(),
+            proteinG = formatNumber(item.proteinG),
+            carbsG = formatNumber(item.carbsG),
+            fatG = formatNumber(item.fatG)
+        )
+
+        private fun formatNumber(v: Double): String =
+            if (v == Math.floor(v) && !v.isInfinite()) v.toInt().toString()
+            else v.toString().trimEnd('0').trimEnd('.')
+    }
+}
+
+/**
+ * Validation and totals for the editable food-scan result. Pure Kotlin so it
+ * is unit-testable on the JVM with no Compose/Android dependency.
+ */
+object FoodScanEdit {
+
+    const val DISCLAIMER = "AI estimates may be inaccurate. Adjust portions or values if needed."
+
+    fun parseDraft(draft: FoodEditDraft): FoodItem? {
+        val name = draft.name.trim()
+        if (name.isEmpty()) return null
+        val calories = draft.calories.trim().toIntOrNull() ?: return null
+        if (calories < 0) return null
+        val protein = parseNonNegDouble(draft.proteinG) ?: return null
+        val carbs = parseNonNegDouble(draft.carbsG) ?: return null
+        val fat = parseNonNegDouble(draft.fatG) ?: return null
+        return FoodItem(
+            name = name,
+            estimatedPortion = draft.estimatedPortion.trim(),
+            calories = calories,
+            proteinG = protein,
+            carbsG = carbs,
+            fatG = fat
+        )
+    }
+
+    fun parseAll(drafts: List<FoodEditDraft>): List<FoodItem>? {
+        val items = ArrayList<FoodItem>(drafts.size)
+        for (draft in drafts) {
+            items.add(parseDraft(draft) ?: return null)
+        }
+        return items
+    }
+
+    /**
+     * Rebuilds a scan result from edited drafts. Totals are always the sum of
+     * the edited foods — the original AI [FoodScanResult.totalCalories] is not
+     * reused. Returns null when any draft is invalid.
+     */
+    fun resultFromDrafts(original: FoodScanResult, drafts: List<FoodEditDraft>): FoodScanResult? {
+        val foods = parseAll(drafts) ?: return null
+        return original.copy(
+            foods = foods,
+            totalCalories = foods.sumOf { it.calories },
+            disclaimer = DISCLAIMER
+        )
+    }
+
+    private fun parseNonNegDouble(text: String): Double? {
+        val v = text.trim().toDoubleOrNull() ?: return null
+        return if (v >= 0.0 && !v.isNaN() && !v.isInfinite()) v else null
+    }
+}
+
+/**
  * Tolerant parser for the Nova food-scan JSON returned by the Cloudflare
  * Worker. Pure Kotlin with no Android/JSON-library dependencies so it is
  * directly unit-testable on the JVM. Unknown/missing fields fall back to
@@ -29,7 +112,7 @@ data class FoodScanResult(
  */
 object FoodScanJson {
 
-    const val DEFAULT_DISCLAIMER = "AI estimate — portions and calories may vary."
+    const val DEFAULT_DISCLAIMER = FoodScanEdit.DISCLAIMER
 
     /** Parse any JSON text into Map/List/String/Double/Boolean/null values. */
     fun parse(text: String): Any? = try {
