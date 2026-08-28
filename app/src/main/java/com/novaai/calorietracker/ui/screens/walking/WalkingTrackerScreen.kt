@@ -1,5 +1,7 @@
 package com.novaai.calorietracker.ui.screens.walking
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,20 +19,27 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.HealthConnectStepsReader
 import com.novaai.calorietracker.data.StepsStore
+import com.novaai.calorietracker.data.TodayStepsRead
+import com.novaai.calorietracker.data.TodayStepsStatus
 import com.novaai.calorietracker.data.UserProfileStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.screens.onboarding.DEFAULT_STEP_GOAL
 import com.novaai.calorietracker.ui.theme.*
-import androidx.annotation.StringRes
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private data class DaySteps(@StringRes val labelRes: Int, val steps: Int, val goal: Int = DEFAULT_STEP_GOAL)
 
@@ -49,13 +58,53 @@ private val weeklySteps = listOf(
 @Composable
 fun WalkingTrackerScreen(navController: NavController) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     var isTracking by remember { mutableStateOf(false) }
-    var todaySteps by remember { mutableIntStateOf(StepsStore.loadToday(context)) }
+    var todaySteps by remember { mutableIntStateOf(0) }
+    var hcStatus by remember { mutableStateOf(TodayStepsStatus.UNAVAILABLE) }
     val stepGoal = remember {
         UserProfileStore.load(context).dailyStepGoal ?: DEFAULT_STEP_GOAL
     }
 
-    LaunchedEffect(todaySteps) { StepsStore.save(context, todaySteps) }
+    fun applyRead(read: TodayStepsRead) {
+        val steps = if (read.status == TodayStepsStatus.OK) read.steps else 0
+        todaySteps = steps
+        hcStatus = read.status
+        StepsStore.save(context, steps)
+    }
+
+    val permissionContract = remember { HealthConnectStepsReader.permissionContract() }
+    val permissionLauncher = rememberLauncherForActivityResult(permissionContract) { granted ->
+        scope.launch {
+            applyRead(HealthConnectStepsReader.readToday(context))
+            if (granted.containsAll(HealthConnectStepsReader.PERMISSIONS)) {
+                isTracking = true
+            }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch { applyRead(HealthConnectStepsReader.readToday(context)) }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(Unit) {
+        applyRead(HealthConnectStepsReader.readToday(context))
+    }
+
+    LaunchedEffect(isTracking) {
+        if (!isTracking) return@LaunchedEffect
+        while (true) {
+            delay(30_000)
+            applyRead(HealthConnectStepsReader.readToday(context))
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -67,7 +116,18 @@ fun WalkingTrackerScreen(navController: NavController) {
             NovaTopBar(title = stringResource(R.string.walking_tracker_title), onBack = { navController.popBackStack() })
         }
         item { Spacer(Modifier.height(8.dp)) }
-        item { StepHeroCard(todaySteps, stepGoal, isTracking) { isTracking = !isTracking } }
+        item {
+            StepHeroCard(todaySteps, stepGoal, isTracking) {
+                if (isTracking) {
+                    isTracking = false
+                } else if (hcStatus == TodayStepsStatus.PERMISSION_REQUIRED) {
+                    permissionLauncher.launch(HealthConnectStepsReader.PERMISSIONS)
+                } else {
+                    isTracking = true
+                    scope.launch { applyRead(HealthConnectStepsReader.readToday(context)) }
+                }
+            }
+        }
         item { Spacer(Modifier.height(20.dp)) }
         item { WalkingStatsRow(todaySteps) }
         item { Spacer(Modifier.height(20.dp)) }

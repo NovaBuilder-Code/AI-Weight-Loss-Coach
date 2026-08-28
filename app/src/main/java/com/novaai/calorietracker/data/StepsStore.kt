@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import java.time.LocalDate
 
 /**
- * Single source of truth for the Steps Tracker's locally saved step count.
- * Used by the Steps (Walking) Tracker screen.
+ * Local cache of today's Health Connect step total and the saved daily goal
+ * consumer used by Walking Tracker (and the Home steps tile).
+ * The live count always comes from Health Connect; this store never invents
+ * demo/sample steps. A previous day's cache starts the new day at zero.
  */
 object StepsStore {
     private const val PREFS_NAME = "steps_tracker"
@@ -19,7 +21,7 @@ object StepsStore {
 
     /**
      * Applies the day-rollover rule (a previous day's count starts the new
-     * day at zero) and returns today's step count.
+     * day at zero) and returns today's cached step count.
      */
     fun loadToday(context: Context): Int {
         val p = prefs(context)
