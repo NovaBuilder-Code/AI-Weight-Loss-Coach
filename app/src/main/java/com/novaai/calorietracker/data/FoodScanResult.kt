@@ -2,7 +2,7 @@ package com.novaai.calorietracker.data
 
 /**
  * One detected food from the Nova food-scan backend.
- * All values are estimates from the AI model.
+ * Values come from a readable nutrition label when present, otherwise an AI estimate.
  */
 data class FoodItem(
     val name: String,
@@ -18,7 +18,11 @@ data class FoodScanResult(
     val foods: List<FoodItem>,
     val totalCalories: Int,
     val confidence: String,
-    val disclaimer: String
+    val disclaimer: String,
+    val source: String = NutritionLabelMath.SOURCE_AI_ESTIMATE,
+    val per100: NutritionPer100? = null,
+    val portionGrams: Double? = null,
+    val basis: String? = null
 )
 
 /**
@@ -125,16 +129,37 @@ object FoodScanJson {
     fun parseScanResult(text: String): FoodScanResult? {
         val root = parse(text) as? Map<*, *> ?: return null
 
-        val foods = (root["foods"] as? List<*>)
+        var foods = (root["foods"] as? List<*>)
             ?.mapNotNull { item -> (item as? Map<*, *>)?.let { foodFrom(it) } }
             ?.take(MAX_FOODS)
             ?: emptyList()
 
+        val source = NutritionLabelMath.normalizeSource(root["source"] as? String)
+        val per100 = per100From(root["per100"])
+        val portionGrams = asPositiveDouble(root["portionGrams"])
+        val basis = (root["basis"] as? String)?.trim()?.take(40)?.takeIf { it.isNotEmpty() }
+
+        var usedLabelScale = false
+        if (source == NutritionLabelMath.SOURCE_NUTRITION_LABEL &&
+            per100 != null &&
+            portionGrams != null
+        ) {
+            val scaled = NutritionLabelMath.scalePer100g(per100, portionGrams)
+            if (scaled != null) {
+                foods = NutritionLabelMath.applyScaledToFoods(foods, scaled, portionGrams)
+                usedLabelScale = true
+            }
+        }
+
         val foodSum = foods.sumOf { it.calories.toLong() }.toInt()
-        val total = (root["totalCalories"] as? Number)
-            ?.toDouble()
-            ?.let { if (it >= 0) it.toInt() else foodSum }
-            ?: foodSum
+        val total = if (usedLabelScale) {
+            foodSum
+        } else {
+            (root["totalCalories"] as? Number)
+                ?.toDouble()
+                ?.let { if (it >= 0) it.toInt() else foodSum }
+                ?: foodSum
+        }
         val confidence = (root["confidence"] as? String)
             ?.lowercase()
             ?.takeIf { it in CONFIDENCE_LEVELS }
@@ -145,7 +170,16 @@ object FoodScanJson {
             ?.takeIf { it.isNotEmpty() }
             ?: DEFAULT_DISCLAIMER
 
-        return FoodScanResult(foods, total, confidence, disclaimer)
+        return FoodScanResult(
+            foods = foods,
+            totalCalories = total,
+            confidence = confidence,
+            disclaimer = disclaimer,
+            source = source,
+            per100 = per100,
+            portionGrams = portionGrams,
+            basis = basis
+        )
     }
 
     private fun foodFrom(map: Map<*, *>): FoodItem = FoodItem(
@@ -156,6 +190,29 @@ object FoodScanJson {
         carbsG = nonNegative(map["carbsG"]),
         fatG = nonNegative(map["fatG"])
     )
+
+    private fun per100From(value: Any?): NutritionPer100? {
+        val map = value as? Map<*, *> ?: return null
+        val calories = asNonNegDouble(map["calories"]) ?: return null
+        return NutritionPer100(
+            calories = calories,
+            proteinG = asNonNegDouble(map["proteinG"]) ?: 0.0,
+            carbsG = asNonNegDouble(map["carbsG"]) ?: 0.0,
+            fatG = asNonNegDouble(map["fatG"]) ?: 0.0
+        )
+    }
+
+    private fun asNonNegDouble(value: Any?): Double? {
+        val n = when (value) {
+            is Number -> value.toDouble()
+            is String -> value.trim().replace(",", ".").toDoubleOrNull()
+            else -> null
+        } ?: return null
+        return if (n >= 0.0 && n.isFinite()) n else null
+    }
+
+    private fun asPositiveDouble(value: Any?): Double? =
+        asNonNegDouble(value)?.takeIf { it > 0.0 }
 
     private fun nonNegative(value: Any?): Double =
         (value as? Number)?.toDouble()?.coerceAtLeast(0.0) ?: 0.0
