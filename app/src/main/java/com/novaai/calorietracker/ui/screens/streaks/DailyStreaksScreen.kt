@@ -11,38 +11,45 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.StreakLogic
+import com.novaai.calorietracker.data.StreakStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
+import java.time.LocalDate
 import kotlinx.coroutines.launch
-
-private const val CURRENT_STREAK = 12
-private const val BEST_STREAK = 35
 
 private data class StreakDay(val label: String, val completed: Boolean)
 
 @Composable
 fun DailyStreaksScreen(navController: NavController) {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val completedMessage = stringResource(R.string.streaks_completed_snackbar)
 
-    var todayCompleted by remember { mutableStateOf(false) }
-    var currentStreak by remember { mutableIntStateOf(CURRENT_STREAK) }
+    val initial = remember { StreakStore.load(context) }
+    var todayCompleted by remember { mutableStateOf(initial.todayCompleted) }
+    var currentStreak by remember { mutableIntStateOf(initial.currentStreak) }
+    var bestStreak by remember { mutableIntStateOf(initial.bestStreak) }
+    var weekFlags by remember {
+        mutableStateOf(StreakLogic.weekCompletionFlags(LocalDate.now(), initial.completedDates))
+    }
 
     val week = listOf(
-        StreakDay(stringResource(R.string.streaks_day_mon), true),
-        StreakDay(stringResource(R.string.streaks_day_tue), true),
-        StreakDay(stringResource(R.string.streaks_day_wed), true),
-        StreakDay(stringResource(R.string.streaks_day_thu), false),
-        StreakDay(stringResource(R.string.streaks_day_fri), false),
-        StreakDay(stringResource(R.string.streaks_day_sat), false),
-        StreakDay(stringResource(R.string.streaks_day_sun), todayCompleted)
+        StreakDay(stringResource(R.string.streaks_day_mon), weekFlags.getOrElse(0) { false }),
+        StreakDay(stringResource(R.string.streaks_day_tue), weekFlags.getOrElse(1) { false }),
+        StreakDay(stringResource(R.string.streaks_day_wed), weekFlags.getOrElse(2) { false }),
+        StreakDay(stringResource(R.string.streaks_day_thu), weekFlags.getOrElse(3) { false }),
+        StreakDay(stringResource(R.string.streaks_day_fri), weekFlags.getOrElse(4) { false }),
+        StreakDay(stringResource(R.string.streaks_day_sat), weekFlags.getOrElse(5) { false }),
+        StreakDay(stringResource(R.string.streaks_day_sun), weekFlags.getOrElse(6) { false })
     )
 
     Scaffold(
@@ -113,7 +120,7 @@ fun DailyStreaksScreen(navController: NavController) {
                         )
                         StatChip(
                             label = stringResource(R.string.streaks_best_streak),
-                            value = "$BEST_STREAK",
+                            value = "$bestStreak",
                             unit = stringResource(R.string.streaks_days_unit),
                             modifier = Modifier.weight(1f),
                             accentColor = GreenPrimary
@@ -173,8 +180,11 @@ fun DailyStreaksScreen(navController: NavController) {
                     stringResource(R.string.streaks_complete_button),
                 onClick = {
                     if (!todayCompleted) {
-                        todayCompleted = true
-                        currentStreak += 1
+                        val state = StreakStore.complete(context)
+                        todayCompleted = state.todayCompleted
+                        currentStreak = state.currentStreak
+                        bestStreak = state.bestStreak
+                        weekFlags = StreakLogic.weekCompletionFlags(LocalDate.now(), state.completedDates)
                         scope.launch { snackbarHostState.showSnackbar(completedMessage) }
                     }
                 },
