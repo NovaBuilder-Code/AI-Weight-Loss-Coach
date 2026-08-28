@@ -1,5 +1,6 @@
 package com.novaai.calorietracker.data
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -42,6 +43,7 @@ object FoodScanService {
                     setRequestProperty("Accept", "application/json")
                 }
 
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "request start jpegBytes=${jpeg.size} mime=$mime")
                 val payload = JSONObject()
                     .put("image", Base64.getEncoder().encodeToString(jpeg))
                     .put("mime", mime)
@@ -49,17 +51,29 @@ object FoodScanService {
                 connection.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
 
                 val status = connection.responseCode
-                if (status !in 200..299) return@withContext FoodScanOutcome.ServerError
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "response status=$status")
+                if (status !in 200..299) {
+                    Log.d(FoodScanCameraHandoff.LOG_TAG, "response error status=$status")
+                    return@withContext FoodScanOutcome.ServerError
+                }
 
                 val body = connection.inputStream.bufferedReader().use { it.readText() }
                 val result = FoodScanJson.parseScanResult(body)
-                if (result == null) FoodScanOutcome.ServerError else FoodScanOutcome.Success(result)
+                if (result == null) {
+                    Log.d(FoodScanCameraHandoff.LOG_TAG, "response parse fail")
+                    FoodScanOutcome.ServerError
+                } else {
+                    Log.d(FoodScanCameraHandoff.LOG_TAG, "response parse ok foods=${result.foods.size}")
+                    FoodScanOutcome.Success(result)
+                }
             } catch (e: SocketTimeoutException) {
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "error timeout")
                 FoodScanOutcome.Timeout
             } catch (e: IOException) {
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "error network ${e.javaClass.simpleName}")
                 FoodScanOutcome.NetworkError
             } catch (e: Exception) {
-                // Malformed JSON or anything unexpected from the server side.
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "error server ${e.javaClass.simpleName}")
                 FoodScanOutcome.ServerError
             } finally {
                 connection?.disconnect()

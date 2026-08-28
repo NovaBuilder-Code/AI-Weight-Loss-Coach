@@ -1,11 +1,14 @@
 package com.novaai.calorietracker.ui.screens.foodscan
 
+import android.content.ClipData
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,11 +60,13 @@ import com.novaai.calorietracker.data.FoodItem
 import com.novaai.calorietracker.data.FoodScanEdit
 import com.novaai.calorietracker.data.FoodScanOutcome
 import com.novaai.calorietracker.data.FoodScanResult
+import com.novaai.calorietracker.data.FoodScanCameraHandoff
 import com.novaai.calorietracker.data.FoodScanService
 import com.novaai.calorietracker.ui.components.NovaAvatar
 import com.novaai.calorietracker.ui.components.NovaTopBar
 import com.novaai.calorietracker.ui.theme.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -88,17 +93,21 @@ fun FoodScanScreen(navController: NavController) {
 
     var previewUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var pendingCameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var pendingCameraPath by rememberSaveable { mutableStateOf<String?>(null) }
     var previewBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var analyzing by remember { mutableStateOf(false) }
+    var analysisInFlight by remember { mutableStateOf(false) }
     var scanResult by remember { mutableStateOf<FoodScanResult?>(null) }
     var noFood by remember { mutableStateOf(false) }
     var logged by remember { mutableStateOf(false) }
     var analyzeError by remember { mutableStateOf<String?>(null) }
     var analyzeGeneration by remember { mutableIntStateOf(0) }
+    var decodeGeneration by remember { mutableIntStateOf(0) }
 
     fun resetScanState() {
         analyzeGeneration++
         analyzing = false
+        analysisInFlight = false
         scanResult = null
         noFood = false
         logged = false
@@ -111,20 +120,40 @@ fun FoodScanScreen(navController: NavController) {
     }
 
     fun analyzePhoto(bitmapOverride: ImageBitmap? = null) {
-        val bitmap = bitmapOverride ?: previewBitmap ?: return
-        if (analyzing) return
+        val bitmap = bitmapOverride ?: previewBitmap ?: run {
+            val uri = previewUri
+            if (uri != null) {
+                analyzeError = null
+                analyzing = true
+                decodeGeneration++
+            }
+            return
+        }
+        if (analysisInFlight) {
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis skipped (in-flight)")
+            return
+        }
+        analysisInFlight = true
         analyzing = true
         scanResult = null
         noFood = false
         logged = false
         analyzeError = null
         val gen = analyzeGeneration
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis")
         scope.launch {
             val outcome = withContext(Dispatchers.IO) {
                 val jpeg = compressJpeg(bitmap.asAndroidBitmap())
-                if (jpeg == null) null else FoodScanService.analyze(jpeg)
+                if (jpeg == null) {
+                    Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis compress fail")
+                    null
+                } else FoodScanService.analyze(jpeg)
             }
-            if (gen != analyzeGeneration) return@launch
+            if (gen != analyzeGeneration) {
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis stale generation")
+                return@launch
+            }
+            analysisInFlight = false
             analyzing = false
             when (outcome) {
                 null -> analyzeError = errorImage
@@ -134,21 +163,40 @@ fun FoodScanScreen(navController: NavController) {
                 FoodScanOutcome.NetworkError -> analyzeError = errorNetwork
                 FoodScanOutcome.ServerError -> analyzeError = errorServer
             }
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis done outcome=${outcome?.javaClass?.simpleName}")
         }
     }
 
-    LaunchedEffect(previewUri) {
+    LaunchedEffect(previewUri, decodeGeneration) {
         val uri = previewUri
         if (uri == null) {
             previewBitmap = null
             return@LaunchedEffect
         }
-        val decoded = withContext(Dispatchers.IO) { decodePreviewBitmap(context, uri) }
+        analyzing = true
+        analyzeError = null
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "decode start uri=$uri")
+        val pathForUri = if (uri == pendingCameraUri) pendingCameraPath else null
+        val decoded = withContext(Dispatchers.IO) {
+            val length = if (pathForUri != null) {
+                waitForPhotoBytes(context, uri, pathForUri)
+            } else {
+                photoContentLength(context, uri, null)
+            }
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "file exists/length=$length")
+            decodePreviewBitmap(context, uri)
+        }
+        if (previewUri != uri) {
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "decode stale uri")
+            return@LaunchedEffect
+        }
         if (decoded == null) {
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "decode fail")
             previewBitmap = null
-            previewUri = null
-            showMessage(errorImage)
+            analyzing = false
+            analyzeError = errorImage
         } else {
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "decode ok")
             previewBitmap = decoded
             analyzePhoto(decoded)
         }
@@ -175,30 +223,60 @@ fun FoodScanScreen(navController: NavController) {
     ) { uri ->
         if (uri != null) {
             resetScanState()
+            analyzing = true
             previewUri = uri
             showMessage(photoSelected)
         }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
+        contract = TakePictureWithUriGrants()
     ) { success ->
+        val uri = pendingCameraUri
+        val immediateLength = photoContentLength(context, uri, pendingCameraPath)
+        Log.d(
+            FoodScanCameraHandoff.LOG_TAG,
+            "camera result success=$success uri=$uri length=$immediateLength"
+        )
         if (success) {
             resetScanState()
-            previewUri = pendingCameraUri
+            analyzing = true
+            previewUri = uri
+            showMessage(photoCaptured)
+            return@rememberLauncherForActivityResult
+        }
+        // Samsung often returns RESULT_CANCELED after OK; accept if the file has bytes.
+        scope.launch {
+            val length = withContext(Dispatchers.IO) {
+                if (uri == null) -1L else waitForPhotoBytes(context, uri, pendingCameraPath)
+            }
+            Log.d(
+                FoodScanCameraHandoff.LOG_TAG,
+                "camera result after wait success=$success uri=$uri length=$length"
+            )
+            if (!FoodScanCameraHandoff.shouldAcceptCameraResult(false, length)) {
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "camera result ignored (cancel or empty)")
+                return@launch
+            }
+            resetScanState()
+            analyzing = true
+            previewUri = uri
             showMessage(photoCaptured)
         }
     }
 
     fun launchCamera() {
-        val cameraDir = File(context.cacheDir, "camera").apply { mkdirs() }
-        val photoFile = File.createTempFile("food_", ".jpg", cameraDir)
+        val app = context.applicationContext
+        val cameraDir = File(app.cacheDir, "camera").apply { mkdirs() }
+        val photoFile = File(cameraDir, "food_${System.currentTimeMillis()}.jpg")
         val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
+            app,
+            "${app.packageName}.fileprovider",
             photoFile
         )
         pendingCameraUri = uri
+        pendingCameraPath = photoFile.absolutePath
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "camera launch uri=$uri path=${photoFile.absolutePath}")
         cameraLauncher.launch(uri)
     }
 
@@ -218,12 +296,13 @@ fun FoodScanScreen(navController: NavController) {
             )
 
             val bitmap = previewBitmap
+            val photoSession = previewUri != null || bitmap != null || analyzing || analyzeError != null
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 28.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = if (previewUri == null) Arrangement.Center else Arrangement.Top
+                verticalArrangement = if (!photoSession) Arrangement.Center else Arrangement.Top
             ) {
                 if (bitmap != null) {
                     item(key = "photo") {
@@ -259,7 +338,9 @@ fun FoodScanScreen(navController: NavController) {
                         }
                         Spacer(Modifier.height(8.dp))
                     }
+                }
 
+                if (photoSession) {
                     item(key = "status") {
                         when {
                             analyzing -> FoodScanAnalyzingCard()
@@ -289,9 +370,6 @@ fun FoodScanScreen(navController: NavController) {
                         )
                         Spacer(Modifier.height(32.dp))
                     }
-                }
-
-                if (bitmap == null) {
                     item(key = "camera") {
                         Button(
                             onClick = { launchCamera() },
@@ -884,5 +962,50 @@ private fun decodePreviewBitmap(context: Context, uri: Uri, maxDim: Int = 1280):
         context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) }?.asImageBitmap()
     }
 } catch (e: Exception) {
+    Log.d(FoodScanCameraHandoff.LOG_TAG, "decode exception ${e.javaClass.simpleName}")
     null
+}
+
+/**
+ * TakePicture extra-output URI grants do not apply to extras unless the URI is
+ * also in clipData. Samsung cameras often need read+write + clipData to write.
+ */
+private class TakePictureWithUriGrants : ActivityResultContracts.TakePicture() {
+    override fun createIntent(context: Context, input: Uri): Intent {
+        return super.createIntent(context, input).apply {
+            addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            clipData = ClipData.newRawUri("food-photo", input)
+        }
+    }
+}
+
+private fun photoContentLength(context: Context, uri: Uri?, path: String?): Long {
+    if (uri == null) return -1L
+    if (path != null) {
+        val file = File(path)
+        if (file.exists()) return file.length()
+    }
+    return try {
+        context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length } ?: -1L
+    } catch (e: Exception) {
+        -1L
+    }
+}
+
+private suspend fun waitForPhotoBytes(
+    context: Context,
+    uri: Uri,
+    path: String?,
+    attempts: Int = 10,
+    delayMs: Long = 100L
+): Long {
+    repeat(attempts) { i ->
+        val length = photoContentLength(context, uri, path)
+        if (length > 0L) return length
+        if (i < attempts - 1) delay(delayMs)
+    }
+    return photoContentLength(context, uri, path)
 }

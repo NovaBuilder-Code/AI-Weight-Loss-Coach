@@ -241,7 +241,7 @@
     <string name="scan_food_upload_gallery">Upload from Gallery</string>
     <string name="scan_food_helper">Nova AI estimates calories and macros from your food photo. Results are estimates, not lab values.</string>
     <string name="scan_food_analyze">Analyze with Nova AI</string>
-    <string name="scan_food_analyzing">Analyzing your photo…</string>
+    <string name="scan_food_analyzing">Analyzing your food…</string>
     <string name="scan_food_result_title">AI Estimate</string>
     <string name="scan_food_result_confidence">Confidence</string>
     <string name="scan_food_result_total">Total</string>
