@@ -3,6 +3,7 @@ package com.novaai.calorietracker.ui.screens.weight
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -18,7 +19,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,47 +29,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.WeightChartPoint
 import com.novaai.calorietracker.data.WeightGoalStore
+import com.novaai.calorietracker.data.WeightHistoryLogic
+import com.novaai.calorietracker.data.WeightLog
 import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.roundToInt
-
-private data class WeightEntry(val day: String, val kg: Float)
-
-private val initialWeightHistory = listOf(
-    WeightEntry("Jun 19", 75.8f),
-    WeightEntry("Jun 20", 75.5f),
-    WeightEntry("Jun 21", 75.2f),
-    WeightEntry("Jun 22", 75.6f),
-    WeightEntry("Jun 23", 74.9f),
-    WeightEntry("Jun 24", 74.6f),
-    WeightEntry("Jun 25", 74.2f),
-)
 
 @Composable
 fun WeightTrackerScreen(navController: NavController) {
     var showLogDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val weightHistory = remember {
-        initialWeightHistory.toMutableStateList().also { list ->
-            WeightStore.load(context)?.let { saved ->
-                val day = saved.date.format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
-                if (list.last().day == day) {
-                    list[list.lastIndex] = WeightEntry(day, saved.kg)
-                } else {
-                    list.add(WeightEntry(day, saved.kg))
-                }
-            }
-        }
+    val history = remember {
+        WeightStore.loadHistory(context).toMutableStateList()
     }
-    val current = weightHistory.last().kg
+    var selectedAtMillis by remember { mutableStateOf<Long?>(null) }
+    val current = WeightHistoryLogic.current(history.toList())?.kg
     val savedGoals = remember { WeightGoalStore.load(context) }
     var startKg by remember { mutableStateOf(savedGoals.startKg) }
     var goalKg by remember { mutableStateOf(savedGoals.goalKg) }
+    val today = LocalDate.now()
+    val chartPoints = WeightHistoryLogic.sevenDayPoints(history.toList(), today)
+    val windowDates = WeightHistoryLogic.sevenDayWindow(today)
+    val selectedLog = history.firstOrNull { it.recordedAtMillis == selectedAtMillis }
+    val tapDetail = selectedLog?.let { WeightHistoryLogic.tapDetail(history.toList(), it) }
 
     LazyColumn(
         modifier = Modifier
@@ -83,9 +72,17 @@ fun WeightTrackerScreen(navController: NavController) {
                 )
             }
         }
-        item { WeightHeroSection(current, startKg ?: 80.0f, goalKg ?: 70.0f) }
+        item { WeightHeroSection(current, startKg ?: 80.0f, goalKg ?: 70.0f, chartPoints) }
         item { Spacer(Modifier.height(20.dp)) }
-        item { WeightChartCard(weightHistory.takeLast(7)) }
+        item {
+            WeightChartCard(
+                points = chartPoints,
+                windowDates = windowDates,
+                selectedAtMillis = selectedAtMillis,
+                tapDetail = tapDetail,
+                onSelect = { selectedAtMillis = it.recordedAtMillis }
+            )
+        }
         item { Spacer(Modifier.height(20.dp)) }
         item {
             SectionHeader(
@@ -94,8 +91,9 @@ fun WeightTrackerScreen(navController: NavController) {
             )
         }
         item { Spacer(Modifier.height(12.dp)) }
-        items(weightHistory.size) { i ->
-            val entry = weightHistory[weightHistory.size - 1 - i]
+        items(history.size) { i ->
+            val sorted = WeightHistoryLogic.sortedChronological(history.toList())
+            val entry = sorted[sorted.size - 1 - i]
             WeightHistoryRow(entry, i == 0)
         }
         item { Spacer(Modifier.height(20.dp)) }
@@ -116,13 +114,10 @@ fun WeightTrackerScreen(navController: NavController) {
             onDismiss = { showLogDialog = false },
             onSave = { kg ->
                 WeightStore.save(context, kg)
-                val today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
-                val lastIndex = weightHistory.lastIndex
-                if (weightHistory[lastIndex].day == today) {
-                    weightHistory[lastIndex] = WeightEntry(today, kg)
-                } else {
-                    weightHistory.add(WeightEntry(today, kg))
-                }
+                val updated = WeightStore.loadHistory(context)
+                history.clear()
+                history.addAll(updated)
+                selectedAtMillis = null
                 showLogDialog = false
             }
         )
@@ -130,12 +125,24 @@ fun WeightTrackerScreen(navController: NavController) {
 }
 
 @Composable
-private fun WeightHeroSection(current: Float, start: Float, goal: Float) {
+private fun WeightHeroSection(
+    current: Float?,
+    start: Float,
+    goal: Float,
+    chartPoints: List<WeightChartPoint>
+) {
     val range = start - goal
-    val progress = if (range > 0f) {
+    val progress = if (current == null) {
+        0f
+    } else if (range > 0f) {
         ((start - current) / range).coerceIn(0f, 1f)
     } else {
         if (current <= goal) 1f else 0f
+    }
+    val weekDelta = if (chartPoints.size >= 2) {
+        chartPoints.last().kg - chartPoints.first().kg
+    } else {
+        null
     }
 
     Row(
@@ -144,36 +151,36 @@ private fun WeightHeroSection(current: Float, start: Float, goal: Float) {
             .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Big weight display
         NovaGlowCard(modifier = Modifier.weight(1f)) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.weight_current), style = MaterialTheme.typography.bodySmall, color = WhiteAlpha60)
                 Text(
-                    text = "${current}kg",
+                    text = current?.let { "${it}kg" } ?: "—",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
                     color = White
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingDown,
-                        contentDescription = null,
-                        tint = GreenPrimary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.weight_this_week),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = GreenPrimary
-                    )
+                if (weekDelta != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (weekDelta <= 0f) Icons.Default.TrendingDown else Icons.Default.TrendingUp,
+                            contentDescription = null,
+                            tint = GreenPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "${WeightHistoryLogic.formatDeltaKg(weekDelta)} this week",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GreenPrimary
+                        )
+                    }
                 }
             }
         }
 
-        // Progress ring
         NovaCard(modifier = Modifier.size(140.dp)) {
             RingProgress(
                 progress = progress,
@@ -195,29 +202,57 @@ private fun WeightHeroSection(current: Float, start: Float, goal: Float) {
 }
 
 @Composable
-private fun WeightChartCard(weightHistory: List<WeightEntry>) {
+private fun WeightChartCard(
+    points: List<WeightChartPoint>,
+    windowDates: List<LocalDate>,
+    selectedAtMillis: Long?,
+    tapDetail: com.novaai.calorietracker.data.WeightTapDetail?,
+    onSelect: (WeightLog) -> Unit
+) {
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.weight_7day_trend), style = MaterialTheme.typography.titleLarge)
             WeightLineChart(
-                data = weightHistory,
+                points = points,
+                selectedAtMillis = selectedAtMillis,
+                onSelect = onSelect,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
             )
-            // X-axis labels
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                weightHistory.forEach { entry ->
+                windowDates.forEach { date ->
                     Text(
-                        text = entry.day.takeLast(2),
+                        text = date.dayOfMonth.toString().padStart(2, '0').takeLast(2),
                         style = MaterialTheme.typography.labelSmall,
                         color = WhiteAlpha60
                     )
+                }
+            }
+            if (tapDetail != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = WeightHistoryLogic.formatDateLabel(tapDetail.date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = White
+                    )
+                    Text(
+                        text = WeightHistoryLogic.formatKg(tapDetail.kg),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = GreenPrimary
+                    )
+                    WeightHistoryLogic.formatDeltaLine(tapDetail.deltaKg)?.let { line ->
+                        Text(
+                            text = line,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = WhiteAlpha60
+                        )
+                    }
                 }
             }
         }
@@ -225,59 +260,95 @@ private fun WeightChartCard(weightHistory: List<WeightEntry>) {
 }
 
 @Composable
-private fun WeightLineChart(data: List<WeightEntry>, modifier: Modifier = Modifier) {
-    val minW = data.minOf { it.kg } - 0.5f
-    val maxW = data.maxOf { it.kg } + 0.5f
+private fun WeightLineChart(
+    points: List<WeightChartPoint>,
+    selectedAtMillis: Long?,
+    onSelect: (WeightLog) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val minW = (points.minOfOrNull { it.kg } ?: 0f) - 0.5f
+    val maxW = (points.maxOfOrNull { it.kg } ?: 1f) + 0.5f
+    val range = (maxW - minW).takeIf { it > 0f } ?: 1f
     val green = GreenPrimary
-    val navy  = NavyBorder
+    val navy = NavyBorder
+    val hitRadiusPx = with(LocalDensity.current) { 36.dp.toPx() }
+    val slotCount = 7
 
-    Canvas(modifier = modifier) {
+    Canvas(
+        modifier = modifier.pointerInput(points) {
+            detectTapGestures { offset ->
+                if (points.isEmpty()) return@detectTapGestures
+                val w = size.width.toFloat()
+                val h = size.height.toFloat()
+                val step = if (slotCount <= 1) 0f else w / (slotCount - 1).toFloat()
+                fun xOf(i: Int) = i * step
+                fun yOf(v: Float) = h - ((v - minW) / range) * h
+                val hit = points.minByOrNull { p ->
+                    val dx = offset.x - xOf(p.dayIndex)
+                    val dy = offset.y - yOf(p.kg)
+                    dx * dx + dy * dy
+                } ?: return@detectTapGestures
+                val dx = offset.x - xOf(hit.dayIndex)
+                val dy = offset.y - yOf(hit.kg)
+                if (dx * dx + dy * dy <= hitRadiusPx * hitRadiusPx) {
+                    onSelect(hit.log)
+                }
+            }
+        }
+    ) {
         val w = size.width
         val h = size.height
-        val step = w / (data.size - 1)
+        val step = if (slotCount <= 1) 0f else w / (slotCount - 1)
 
         fun xOf(i: Int) = i * step
-        fun yOf(v: Float) = h - ((v - minW) / (maxW - minW)) * h
+        fun yOf(v: Float) = h - ((v - minW) / range) * h
 
-        // Grid lines
         repeat(4) { i ->
             val y = h * i / 3f
             drawLine(navy, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
         }
 
-        val path = Path()
-        val fill = Path()
-        data.forEachIndexed { i, entry ->
-            val x = xOf(i)
-            val y = yOf(entry.kg)
-            if (i == 0) {
-                path.moveTo(x, y)
-                fill.moveTo(x, h)
-                fill.lineTo(x, y)
-            } else {
-                val prevX = xOf(i - 1)
-                val prevY = yOf(data[i - 1].kg)
-                val cp1 = Offset(prevX + step * 0.5f, prevY)
-                val cp2 = Offset(x - step * 0.5f, y)
-                path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
-                fill.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+        if (points.isNotEmpty()) {
+            val path = Path()
+            val fill = Path()
+            points.forEachIndexed { i, entry ->
+                val x = xOf(entry.dayIndex)
+                val y = yOf(entry.kg)
+                if (i == 0) {
+                    path.moveTo(x, y)
+                    fill.moveTo(x, h)
+                    fill.lineTo(x, y)
+                } else {
+                    val prev = points[i - 1]
+                    val prevX = xOf(prev.dayIndex)
+                    val prevY = yOf(prev.kg)
+                    val dx = x - prevX
+                    val cp1 = Offset(prevX + dx * 0.5f, prevY)
+                    val cp2 = Offset(x - dx * 0.5f, y)
+                    path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+                    fill.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+                }
             }
-        }
-        fill.lineTo(xOf(data.size - 1), h)
-        fill.close()
+            fill.lineTo(xOf(points.last().dayIndex), h)
+            fill.close()
 
-        drawPath(fill, Brush.verticalGradient(listOf(green.copy(alpha = 0.25f), Color.Transparent)))
-        drawPath(path, green, style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(fill, Brush.verticalGradient(listOf(green.copy(alpha = 0.25f), Color.Transparent)))
+            if (points.size >= 2) {
+                drawPath(path, green, style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
 
-        data.forEachIndexed { i, entry ->
-            drawCircle(green, radius = 5f, center = Offset(xOf(i), yOf(entry.kg)))
-            drawCircle(Color.White, radius = 2.5f, center = Offset(xOf(i), yOf(entry.kg)))
+            points.forEach { entry ->
+                val selected = entry.log.recordedAtMillis == selectedAtMillis
+                val center = Offset(xOf(entry.dayIndex), yOf(entry.kg))
+                drawCircle(green, radius = if (selected) 8f else 5f, center = center)
+                drawCircle(Color.White, radius = if (selected) 3.5f else 2.5f, center = center)
+            }
         }
     }
 }
 
 @Composable
-private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
+private fun WeightHistoryRow(entry: WeightLog, isLatest: Boolean) {
     val latestLabel = stringResource(R.string.weight_latest)
     Row(
         modifier = Modifier
@@ -297,14 +368,18 @@ private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
                 modifier = Modifier.size(20.dp)
             )
             Column {
-                Text(text = entry.day, style = MaterialTheme.typography.bodyMedium, color = White)
+                Text(
+                    text = WeightHistoryLogic.formatDateLabel(entry.localDate()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = White
+                )
                 if (isLatest) {
                     Text(latestLabel, style = MaterialTheme.typography.labelSmall, color = GreenPrimary)
                 }
             }
         }
         Text(
-            text = "${entry.kg} kg",
+            text = WeightHistoryLogic.formatKg(entry.kg),
             style = MaterialTheme.typography.titleMedium,
             color = if (isLatest) GreenPrimary else White
         )
@@ -313,7 +388,7 @@ private fun WeightHistoryRow(entry: WeightEntry, isLatest: Boolean) {
 
 @Composable
 private fun WeightGoalCard(
-    current: Float,
+    current: Float?,
     startKg: Float?,
     goalKg: Float?,
     onStartChange: (Float) -> Unit,
@@ -323,7 +398,11 @@ private fun WeightGoalCard(
     var showStartDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
 
-    val remaining = "%.1f".format((current - (goalKg ?: 70.0f)).coerceAtLeast(0f))
+    val remaining = if (current != null) {
+        "%.1f".format((current - (goalKg ?: 70.0f)).coerceAtLeast(0f))
+    } else {
+        "—"
+    }
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
