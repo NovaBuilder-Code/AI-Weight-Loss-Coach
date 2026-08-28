@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -44,6 +45,9 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -104,6 +108,25 @@ fun FoodScanScreen(navController: NavController) {
     var analyzeGeneration by remember { mutableIntStateOf(0) }
     var decodeGeneration by remember { mutableIntStateOf(0) }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "resume_after_camera")
+                val path = pendingCameraPath
+                val uri = pendingCameraUri
+                val exists = path != null && File(path).exists()
+                val length = photoContentLength(context, uri, path)
+                Log.d(
+                    FoodScanCameraHandoff.LOG_TAG,
+                    "file_check exists=$exists length=$length path=$path"
+                )
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     fun resetScanState() {
         analyzeGeneration++
         analyzing = false
@@ -141,6 +164,7 @@ fun FoodScanScreen(navController: NavController) {
         analyzeError = null
         val gen = analyzeGeneration
         Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis")
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "startAnalysis_called")
         scope.launch {
             val outcome = withContext(Dispatchers.IO) {
                 val jpeg = compressJpeg(bitmap.asAndroidBitmap())
@@ -176,15 +200,21 @@ fun FoodScanScreen(navController: NavController) {
         analyzing = true
         analyzeError = null
         Log.d(FoodScanCameraHandoff.LOG_TAG, "decode start uri=$uri")
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "decode_started uri=$uri")
         val pathForUri = if (uri == pendingCameraUri) pendingCameraPath else null
-        val decoded = withContext(Dispatchers.IO) {
-            val length = if (pathForUri != null) {
+        val (decoded, length) = withContext(Dispatchers.IO) {
+            val bytes = if (pathForUri != null) {
                 waitForPhotoBytes(context, uri, pathForUri)
             } else {
                 photoContentLength(context, uri, null)
             }
-            Log.d(FoodScanCameraHandoff.LOG_TAG, "file exists/length=$length")
-            decodePreviewBitmap(context, uri)
+            val exists = pathForUri != null && File(pathForUri).exists()
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "file exists/length=$bytes")
+            Log.d(
+                FoodScanCameraHandoff.LOG_TAG,
+                "file_check exists=$exists length=$bytes path=$pathForUri"
+            )
+            decodePreviewBitmap(context, uri) to bytes
         }
         if (previewUri != uri) {
             Log.d(FoodScanCameraHandoff.LOG_TAG, "decode stale uri")
@@ -192,11 +222,14 @@ fun FoodScanScreen(navController: NavController) {
         }
         if (decoded == null) {
             Log.d(FoodScanCameraHandoff.LOG_TAG, "decode fail")
+            val reason = if (length <= 0L) "empty_or_missing length=$length" else "null_bitmap"
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "decode_failure reason=$reason")
             previewBitmap = null
             analyzing = false
             analyzeError = errorImage
         } else {
             Log.d(FoodScanCameraHandoff.LOG_TAG, "decode ok")
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "decode_success")
             previewBitmap = decoded
             analyzePhoto(decoded)
         }
@@ -204,6 +237,16 @@ fun FoodScanScreen(navController: NavController) {
 
     val statusIndex = 1
     LaunchedEffect(scanResult, noFood, analyzeError, analyzing) {
+        val uiState = when {
+            analyzing -> "analyzing"
+            analyzeError != null -> "error=$analyzeError"
+            noFood -> "no_food"
+            scanResult != null -> "success"
+            else -> null
+        }
+        if (uiState != null) {
+            Log.d(FoodScanCameraHandoff.LOG_TAG, "ui_state $uiState")
+        }
         if (previewUri != null && (scanResult != null || noFood || analyzeError != null || analyzing)) {
             listState.scrollToItem(statusIndex)
         }
@@ -233,10 +276,20 @@ fun FoodScanScreen(navController: NavController) {
         contract = TakePictureWithUriGrants()
     ) { success ->
         val uri = pendingCameraUri
-        val immediateLength = photoContentLength(context, uri, pendingCameraPath)
+        val path = pendingCameraPath
+        val immediateLength = photoContentLength(context, uri, path)
+        val immediateExists = path != null && File(path).exists()
         Log.d(
             FoodScanCameraHandoff.LOG_TAG,
             "camera result success=$success uri=$uri length=$immediateLength"
+        )
+        Log.d(
+            FoodScanCameraHandoff.LOG_TAG,
+            "camera_callback_received success=$success uri=$uri path=$path"
+        )
+        Log.d(
+            FoodScanCameraHandoff.LOG_TAG,
+            "file_check exists=$immediateExists length=$immediateLength path=$path"
         )
         if (success) {
             resetScanState()
@@ -248,11 +301,16 @@ fun FoodScanScreen(navController: NavController) {
         // Samsung often returns RESULT_CANCELED after OK; accept if the file has bytes.
         scope.launch {
             val length = withContext(Dispatchers.IO) {
-                if (uri == null) -1L else waitForPhotoBytes(context, uri, pendingCameraPath)
+                if (uri == null) -1L else waitForPhotoBytes(context, uri, path)
             }
+            val exists = path != null && File(path).exists()
             Log.d(
                 FoodScanCameraHandoff.LOG_TAG,
                 "camera result after wait success=$success uri=$uri length=$length"
+            )
+            Log.d(
+                FoodScanCameraHandoff.LOG_TAG,
+                "file_check exists=$exists length=$length path=$path"
             )
             if (!FoodScanCameraHandoff.shouldAcceptCameraResult(false, length)) {
                 Log.d(FoodScanCameraHandoff.LOG_TAG, "camera result ignored (cancel or empty)")
@@ -266,6 +324,7 @@ fun FoodScanScreen(navController: NavController) {
     }
 
     fun launchCamera() {
+        Log.d(FoodScanCameraHandoff.LOG_TAG, "take_photo_clicked")
         val app = context.applicationContext
         val cameraDir = File(app.cacheDir, "camera").apply { mkdirs() }
         val photoFile = File(cameraDir, "food_${System.currentTimeMillis()}.jpg")
@@ -276,7 +335,13 @@ fun FoodScanScreen(navController: NavController) {
         )
         pendingCameraUri = uri
         pendingCameraPath = photoFile.absolutePath
+        val exists = photoFile.exists()
+        val length = if (exists) photoFile.length() else 0L
         Log.d(FoodScanCameraHandoff.LOG_TAG, "camera launch uri=$uri path=${photoFile.absolutePath}")
+        Log.d(
+            FoodScanCameraHandoff.LOG_TAG,
+            "output_created uri=$uri path=${photoFile.absolutePath} exists=$exists length=$length"
+        )
         cameraLauncher.launch(uri)
     }
 
@@ -963,6 +1028,7 @@ private fun decodePreviewBitmap(context: Context, uri: Uri, maxDim: Int = 1280):
     }
 } catch (e: Exception) {
     Log.d(FoodScanCameraHandoff.LOG_TAG, "decode exception ${e.javaClass.simpleName}")
+    Log.d(FoodScanCameraHandoff.LOG_TAG, "decode_failure reason=${e.javaClass.simpleName}")
     null
 }
 

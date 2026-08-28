@@ -44,6 +44,10 @@ object FoodScanService {
                 }
 
                 Log.d(FoodScanCameraHandoff.LOG_TAG, "request start jpegBytes=${jpeg.size} mime=$mime")
+                Log.d(
+                    FoodScanCameraHandoff.LOG_TAG,
+                    "request_start url=/scan-food jpegBytes=${jpeg.size}"
+                )
                 val payload = JSONObject()
                     .put("image", Base64.getEncoder().encodeToString(jpeg))
                     .put("mime", mime)
@@ -52,8 +56,18 @@ object FoodScanService {
 
                 val status = connection.responseCode
                 Log.d(FoodScanCameraHandoff.LOG_TAG, "response status=$status")
+                Log.d(FoodScanCameraHandoff.LOG_TAG, "http_status=$status")
                 if (status !in 200..299) {
                     Log.d(FoodScanCameraHandoff.LOG_TAG, "response error status=$status")
+                    val errorBody = try {
+                        connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                    } catch (_: Exception) {
+                        ""
+                    }
+                    Log.d(
+                        FoodScanCameraHandoff.LOG_TAG,
+                        "http_error_body=${errorBody.take(400)}"
+                    )
                     return@withContext FoodScanOutcome.ServerError
                 }
 
@@ -61,9 +75,17 @@ object FoodScanService {
                 val result = FoodScanJson.parseScanResult(body)
                 if (result == null) {
                     Log.d(FoodScanCameraHandoff.LOG_TAG, "response parse fail")
+                    Log.d(
+                        FoodScanCameraHandoff.LOG_TAG,
+                        "parse_fail bodyPrefix=${body.take(400)}"
+                    )
                     FoodScanOutcome.ServerError
                 } else {
                     Log.d(FoodScanCameraHandoff.LOG_TAG, "response parse ok foods=${result.foods.size}")
+                    Log.d(
+                        FoodScanCameraHandoff.LOG_TAG,
+                        "parse_ok foods=${result.foods.size} totalCalories=${result.totalCalories} confidence=${result.confidence}"
+                    )
                     FoodScanOutcome.Success(result)
                 }
             } catch (e: SocketTimeoutException) {
