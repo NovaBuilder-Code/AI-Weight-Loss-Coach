@@ -188,4 +188,45 @@ class WeightHistoryLogicTest {
         assertEquals("Aug 28", WeightHistoryLogic.formatDateLabel(today))
         assertEquals("74.2 kg", WeightHistoryLogic.formatKg(74.2f))
     }
+
+    @Test
+    fun sevenDayDateLabelsAreEnglishMonthDayEnding28Aug2026() {
+        assertEquals(
+            listOf("Aug 22", "Aug 23", "Aug 24", "Aug 25", "Aug 26", "Aug 27", "Aug 28"),
+            WeightHistoryLogic.sevenDayDateLabels(today)
+        )
+    }
+
+    @Test
+    fun sevenDayDateLabelsCrossMonthBoundaryEnding3Sep2026() {
+        val end = LocalDate.of(2026, 9, 3)
+        assertEquals(
+            listOf("Aug 28", "Aug 29", "Aug 30", "Aug 31", "Sep 1", "Sep 2", "Sep 3"),
+            WeightHistoryLogic.sevenDayDateLabels(end)
+        )
+        // Still a rolling last-7 window, not month-start (would be Sep 1..3 only).
+        assertEquals(7, WeightHistoryLogic.sevenDayWindow(end).size)
+        assertEquals(LocalDate.of(2026, 8, 28), WeightHistoryLogic.sevenDayWindow(end).first())
+    }
+
+    @Test
+    fun missingStartOrGoalDoesNotInventRemainingOrProgress() {
+        assertNull(WeightHistoryLogic.remainingKg(74.2f, null, 70f))
+        assertNull(WeightHistoryLogic.remainingKg(74.2f, 80f, null))
+        assertNull(WeightHistoryLogic.remainingKg(null, 80f, 70f))
+        assertNull(WeightHistoryLogic.progressToGoal(74.2f, 80f, null))
+        assertNull(WeightHistoryLogic.progressToGoal(74.2f, null, 70f))
+        assertNull(WeightHistoryLogic.progressToGoal(null, 80f, 70f))
+        assertEquals("—", WeightHistoryLogic.formatOptionalKg(null))
+        assertEquals("—", WeightHistoryLogic.formatProgressPercent(null))
+    }
+
+    @Test
+    fun remainingAndProgressUseOnlyRealStartGoalCurrent() {
+        assertEquals(4.2f, WeightHistoryLogic.remainingKg(74.2f, 80f, 70f)!!, 0.001f)
+        assertEquals(0.58f, WeightHistoryLogic.progressToGoal(74.2f, 80f, 70f)!!, 0.01f)
+        assertEquals("74.2", WeightHistoryLogic.formatOptionalKg(74.2f))
+        assertEquals("58%", WeightHistoryLogic.formatProgressPercent(0.58f))
+        assertEquals("0.0", WeightHistoryLogic.formatOptionalKg(0f))
+    }
 }

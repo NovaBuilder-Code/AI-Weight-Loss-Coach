@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +38,6 @@ import com.novaai.calorietracker.data.WeightStore
 import com.novaai.calorietracker.ui.components.*
 import com.novaai.calorietracker.ui.theme.*
 import java.time.LocalDate
-import kotlin.math.roundToInt
 
 @Composable
 fun WeightTrackerScreen(navController: NavController) {
@@ -72,7 +72,7 @@ fun WeightTrackerScreen(navController: NavController) {
                 )
             }
         }
-        item { WeightHeroSection(current, startKg ?: 80.0f, goalKg ?: 70.0f, chartPoints) }
+        item { WeightHeroSection(current, startKg, goalKg, chartPoints) }
         item { Spacer(Modifier.height(20.dp)) }
         item {
             WeightChartCard(
@@ -127,18 +127,11 @@ fun WeightTrackerScreen(navController: NavController) {
 @Composable
 private fun WeightHeroSection(
     current: Float?,
-    start: Float,
-    goal: Float,
+    start: Float?,
+    goal: Float?,
     chartPoints: List<WeightChartPoint>
 ) {
-    val range = start - goal
-    val progress = if (current == null) {
-        0f
-    } else if (range > 0f) {
-        ((start - current) / range).coerceIn(0f, 1f)
-    } else {
-        if (current <= goal) 1f else 0f
-    }
+    val progress = WeightHistoryLogic.progressToGoal(current, start, goal)
     val weekDelta = if (chartPoints.size >= 2) {
         chartPoints.last().kg - chartPoints.first().kg
     } else {
@@ -183,13 +176,13 @@ private fun WeightHeroSection(
 
         NovaCard(modifier = Modifier.size(140.dp)) {
             RingProgress(
-                progress = progress,
+                progress = progress ?: 0f,
                 modifier = Modifier.fillMaxSize(),
                 strokeWidth = 12f
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "${(progress * 100).roundToInt()}%",
+                        text = WeightHistoryLogic.formatProgressPercent(progress),
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = GreenPrimary
@@ -228,9 +221,14 @@ private fun WeightChartCard(
             ) {
                 windowDates.forEach { date ->
                     Text(
-                        text = date.dayOfMonth.toString().padStart(2, '0').takeLast(2),
+                        text = WeightHistoryLogic.formatDateLabel(date),
                         style = MaterialTheme.typography.labelSmall,
-                        color = WhiteAlpha60
+                        fontSize = 9.sp,
+                        lineHeight = 11.sp,
+                        color = WhiteAlpha60,
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -398,11 +396,7 @@ private fun WeightGoalCard(
     var showStartDialog by remember { mutableStateOf(false) }
     var showGoalDialog by remember { mutableStateOf(false) }
 
-    val remaining = if (current != null) {
-        "%.1f".format((current - (goalKg ?: 70.0f)).coerceAtLeast(0f))
-    } else {
-        "—"
-    }
+    val remaining = WeightHistoryLogic.remainingKg(current, startKg, goalKg)
     NovaCard(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 20.dp)) {
@@ -411,9 +405,27 @@ private fun WeightGoalCard(
                 Icon(Icons.Default.Flag, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp))
                 Text(stringResource(R.string.weight_goal_settings), style = MaterialTheme.typography.titleLarge)
             }
-            StatChip(label = stringResource(R.string.weight_start),     value = "%.1f".format(startKg ?: 80.0f), unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showStartDialog = true }, accentColor = WhiteAlpha60)
-            StatChip(label = stringResource(R.string.weight_goal),      value = "%.1f".format(goalKg ?: 70.0f),  unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth().clickable { showGoalDialog = true },  accentColor = GreenPrimary)
-            StatChip(label = stringResource(R.string.weight_remaining), value = remaining, unit = stringResource(R.string.kg), modifier = Modifier.fillMaxWidth(), accentColor = InfoBlue)
+            StatChip(
+                label = stringResource(R.string.weight_start),
+                value = WeightHistoryLogic.formatOptionalKg(startKg),
+                unit = if (startKg != null) stringResource(R.string.kg) else "",
+                modifier = Modifier.fillMaxWidth().clickable { showStartDialog = true },
+                accentColor = WhiteAlpha60
+            )
+            StatChip(
+                label = stringResource(R.string.weight_goal),
+                value = WeightHistoryLogic.formatOptionalKg(goalKg),
+                unit = if (goalKg != null) stringResource(R.string.kg) else "",
+                modifier = Modifier.fillMaxWidth().clickable { showGoalDialog = true },
+                accentColor = GreenPrimary
+            )
+            StatChip(
+                label = stringResource(R.string.weight_remaining),
+                value = WeightHistoryLogic.formatOptionalKg(remaining),
+                unit = if (remaining != null) stringResource(R.string.kg) else "",
+                modifier = Modifier.fillMaxWidth(),
+                accentColor = InfoBlue
+            )
         }
     }
 

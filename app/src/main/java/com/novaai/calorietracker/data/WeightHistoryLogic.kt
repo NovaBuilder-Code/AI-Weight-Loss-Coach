@@ -6,6 +6,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /** One persisted weight log: kilograms at a calendar date/time (epoch millis). */
 data class WeightLog(
@@ -135,6 +136,42 @@ object WeightHistoryLogic {
 
     fun formatDeltaLine(deltaKg: Float?): String? =
         deltaKg?.let { "${formatDeltaKg(it)} since previous entry" }
+
+
+    /** Axis labels for the rolling last-7-calendar-days window: "Aug 22", … */
+    fun sevenDayDateLabels(today: LocalDate): List<String> =
+        sevenDayWindow(today).map { formatDateLabel(it) }
+
+    /**
+     * Kilograms still to go to [goalKg]. Null unless current, start, and goal
+     * are all real saved values — never invents 80/70 (or any other demo kg).
+     */
+    fun remainingKg(currentKg: Float?, startKg: Float?, goalKg: Float?): Float? {
+        if (currentKg == null || startKg == null || goalKg == null) return null
+        return (currentKg - goalKg).coerceAtLeast(0f)
+    }
+
+    /**
+     * Fraction of the way from [startKg] to [goalKg] at [currentKg], or null
+     * when any of the three is missing so the UI can show empty instead of 0%.
+     */
+    fun progressToGoal(currentKg: Float?, startKg: Float?, goalKg: Float?): Float? {
+        if (currentKg == null || startKg == null || goalKg == null) return null
+        val range = startKg - goalKg
+        return if (range > 0f) {
+            ((startKg - currentKg) / range).coerceIn(0f, 1f)
+        } else {
+            if (currentKg <= goalKg) 1f else 0f
+        }
+    }
+
+    /** "74.2" or an em dash when the value was never saved. */
+    fun formatOptionalKg(kg: Float?): String =
+        kg?.let { String.format(Locale.US, "%.1f", it) } ?: "—"
+
+    /** "58%" or an em dash when progress cannot be computed from real values. */
+    fun formatProgressPercent(progress: Float?): String =
+        progress?.let { "${(it * 100).roundToInt()}%" } ?: "—"
 
     /**
      * If the JSON history is empty but the old single current_weight_kg exists,
