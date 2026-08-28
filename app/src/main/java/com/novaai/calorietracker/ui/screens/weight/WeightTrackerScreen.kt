@@ -271,76 +271,94 @@ private fun WeightLineChart(
     val navy = NavyBorder
     val hitRadiusPx = with(LocalDensity.current) { 36.dp.toPx() }
     val slotCount = 7
+    val emptyMessage = stringResource(R.string.weight_7day_empty)
 
-    Canvas(
-        modifier = modifier.pointerInput(points) {
-            detectTapGestures { offset ->
-                if (points.isEmpty()) return@detectTapGestures
-                val w = size.width.toFloat()
-                val h = size.height.toFloat()
-                val step = if (slotCount <= 1) 0f else w / (slotCount - 1).toFloat()
-                fun xOf(i: Int) = i * step
-                fun yOf(v: Float) = h - ((v - minW) / range) * h
-                val hit = points.minByOrNull { p ->
-                    val dx = offset.x - xOf(p.dayIndex)
-                    val dy = offset.y - yOf(p.kg)
-                    dx * dx + dy * dy
-                } ?: return@detectTapGestures
-                val dx = offset.x - xOf(hit.dayIndex)
-                val dy = offset.y - yOf(hit.kg)
-                if (dx * dx + dy * dy <= hitRadiusPx * hitRadiusPx) {
-                    onSelect(hit.log)
+    Box(modifier = modifier) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(points) {
+                    detectTapGestures { offset ->
+                        if (points.isEmpty()) return@detectTapGestures
+                        val w = size.width.toFloat()
+                        val h = size.height.toFloat()
+                        val padY = 10f
+                        val innerH = (h - 2f * padY).coerceAtLeast(1f)
+                        fun xOf(i: Int) = ((i + 0.5f) / slotCount) * w
+                        fun yOf(v: Float) = padY + innerH - ((v - minW) / range) * innerH
+                        val hit = points.minByOrNull { p ->
+                            val dx = offset.x - xOf(p.dayIndex)
+                            val dy = offset.y - yOf(p.kg)
+                            dx * dx + dy * dy
+                        } ?: return@detectTapGestures
+                        val dx = offset.x - xOf(hit.dayIndex)
+                        val dy = offset.y - yOf(hit.kg)
+                        if (dx * dx + dy * dy <= hitRadiusPx * hitRadiusPx) {
+                            onSelect(hit.log)
+                        }
+                    }
                 }
+        ) {
+            val w = size.width
+            val h = size.height
+            val padY = 10f
+            val innerH = (h - 2f * padY).coerceAtLeast(1f)
+            fun xOf(i: Int) = ((i + 0.5f) / slotCount) * w
+            fun yOf(v: Float) = padY + innerH - ((v - minW) / range) * innerH
+
+            repeat(4) { i ->
+                val y = h * i / 3f
+                drawLine(navy, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
             }
-        }
-    ) {
-        val w = size.width
-        val h = size.height
-        val step = if (slotCount <= 1) 0f else w / (slotCount - 1)
 
-        fun xOf(i: Int) = i * step
-        fun yOf(v: Float) = h - ((v - minW) / range) * h
-
-        repeat(4) { i ->
-            val y = h * i / 3f
-            drawLine(navy, Offset(0f, y), Offset(w, y), strokeWidth = 1f)
-        }
-
-        if (points.isNotEmpty()) {
-            val path = Path()
-            val fill = Path()
-            points.forEachIndexed { i, entry ->
-                val x = xOf(entry.dayIndex)
-                val y = yOf(entry.kg)
-                if (i == 0) {
-                    path.moveTo(x, y)
-                    fill.moveTo(x, h)
-                    fill.lineTo(x, y)
-                } else {
-                    val prev = points[i - 1]
-                    val prevX = xOf(prev.dayIndex)
-                    val prevY = yOf(prev.kg)
-                    val dx = x - prevX
-                    val cp1 = Offset(prevX + dx * 0.5f, prevY)
-                    val cp2 = Offset(x - dx * 0.5f, y)
-                    path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
-                    fill.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+            val segments = WeightHistoryLogic.trendSegments(points)
+            if (segments.isNotEmpty()) {
+                val path = Path()
+                val fill = Path()
+                points.forEachIndexed { i, entry ->
+                    val x = xOf(entry.dayIndex)
+                    val y = yOf(entry.kg)
+                    if (i == 0) {
+                        path.moveTo(x, y)
+                        fill.moveTo(x, h)
+                        fill.lineTo(x, y)
+                    } else {
+                        val prev = points[i - 1]
+                        val prevX = xOf(prev.dayIndex)
+                        val prevY = yOf(prev.kg)
+                        val dx = x - prevX
+                        val cp1 = Offset(prevX + dx * 0.5f, prevY)
+                        val cp2 = Offset(x - dx * 0.5f, y)
+                        path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+                        fill.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, x, y)
+                    }
                 }
-            }
-            fill.lineTo(xOf(points.last().dayIndex), h)
-            fill.close()
+                fill.lineTo(xOf(points.last().dayIndex), h)
+                fill.close()
 
-            drawPath(fill, Brush.verticalGradient(listOf(green.copy(alpha = 0.25f), Color.Transparent)))
-            if (points.size >= 2) {
+                drawPath(fill, Brush.verticalGradient(listOf(green.copy(alpha = 0.25f), Color.Transparent)))
                 drawPath(path, green, style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
 
             points.forEach { entry ->
                 val selected = entry.log.recordedAtMillis == selectedAtMillis
                 val center = Offset(xOf(entry.dayIndex), yOf(entry.kg))
-                drawCircle(green, radius = if (selected) 8f else 5f, center = center)
+                drawCircle(green.copy(alpha = 0.28f), radius = if (selected) 14f else 11f, center = center)
+                drawCircle(green, radius = if (selected) 8f else 6f, center = center)
                 drawCircle(Color.White, radius = if (selected) 3.5f else 2.5f, center = center)
             }
+        }
+
+        if (points.isEmpty()) {
+            Text(
+                text = emptyMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = WhiteAlpha60,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 16.dp)
+            )
         }
     }
 }

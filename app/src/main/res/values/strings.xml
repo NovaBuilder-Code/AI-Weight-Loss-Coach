@@ -99,6 +99,7 @@
     <string name="weight_this_week">−1.6 kg this week</string>
     <string name="weight_to_goal">to goal</string>
     <string name="weight_7day_trend">7-Day Trend</string>
+    <string name="weight_7day_empty">Log your weight to see your 7-day trend.</string>
     <string name="weight_section_history">History</string>
     <string name="weight_latest">Latest</string>
     <string name="weight_goal_settings">Goal Settings</string>

@@ -229,4 +229,42 @@ class WeightHistoryLogicTest {
         assertEquals("58%", WeightHistoryLogic.formatProgressPercent(0.58f))
         assertEquals("0.0", WeightHistoryLogic.formatOptionalKg(0f))
     }
+
+    @Test
+    fun zeroPointsMeansNoPlottedPointsAndNoSegments() {
+        val points = WeightHistoryLogic.sevenDayPoints(emptyList(), today, zone)
+        assertEquals(0, WeightHistoryLogic.plottedPointCount(points))
+        assertTrue(WeightHistoryLogic.trendSegments(points).isEmpty())
+    }
+
+    @Test
+    fun oneRealPointPlotsOneDotAndNoSegment() {
+        val logs = listOf(log(74.2f, today))
+        val points = WeightHistoryLogic.sevenDayPoints(logs, today, zone)
+        assertEquals(1, WeightHistoryLogic.plottedPointCount(points))
+        assertEquals(74.2f, points.single().kg, 0.001f)
+        assertEquals(today, points.single().date)
+        assertTrue(WeightHistoryLogic.trendSegments(points).isEmpty())
+    }
+
+    @Test
+    fun twoPlusRealPointsProduceSegmentsOnlyBetweenRealLogs() {
+        val logs = listOf(
+            log(75.5f, LocalDate.of(2026, 8, 22)),
+            log(74.8f, LocalDate.of(2026, 8, 24)),
+            log(74.2f, today)
+        )
+        val points = WeightHistoryLogic.sevenDayPoints(logs, today, zone)
+        assertEquals(3, WeightHistoryLogic.plottedPointCount(points))
+        assertEquals(listOf(0, 2, 6), points.map { it.dayIndex })
+        val segments = WeightHistoryLogic.trendSegments(points)
+        assertEquals(2, segments.size)
+        assertEquals(75.5f, segments[0].first.kg, 0.001f)
+        assertEquals(74.8f, segments[0].second.kg, 0.001f)
+        assertEquals(74.8f, segments[1].first.kg, 0.001f)
+        assertEquals(74.2f, segments[1].second.kg, 0.001f)
+        assertEquals(LocalDate.of(2026, 8, 22), segments[0].first.date)
+        assertEquals(LocalDate.of(2026, 8, 24), segments[0].second.date)
+        assertEquals(today, segments[1].second.date)
+    }
 }

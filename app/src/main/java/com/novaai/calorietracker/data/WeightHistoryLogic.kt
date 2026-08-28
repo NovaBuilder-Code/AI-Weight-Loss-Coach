@@ -92,6 +92,24 @@ object WeightHistoryLogic {
         }
     }
 
+    /**
+     * How many real dots the 7-day trend should plot. Zero means show the
+     * empty overlay rather than any fabricated chart points.
+     */
+    fun plottedPointCount(points: List<WeightChartPoint>): Int = points.size
+
+    /**
+     * Consecutive real-to-real line segments. Empty when fewer than 2 points
+     * (a line needs two dots). Calendar gaps still yield a segment between
+     * the surrounding real logs; y-values never come from missing days.
+     */
+    fun trendSegments(
+        points: List<WeightChartPoint>
+    ): List<Pair<WeightChartPoint, WeightChartPoint>> {
+        if (points.size < 2) return emptyList()
+        return points.zipWithNext()
+    }
+
     /** The seven calendar dates of the trend window, oldest first. */
     fun sevenDayWindow(today: LocalDate): List<LocalDate> =
         (0L..6L).map { today.minusDays(6 - it) }
