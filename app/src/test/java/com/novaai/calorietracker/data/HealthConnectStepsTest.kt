@@ -99,6 +99,7 @@ class HealthConnectStepsTest {
         )
         assertEquals(0, read.steps)
         assertEquals(TodayStepsStatus.OK, read.status)
+        assertEquals(false, read.hasRecords)
     }
 
     @Test

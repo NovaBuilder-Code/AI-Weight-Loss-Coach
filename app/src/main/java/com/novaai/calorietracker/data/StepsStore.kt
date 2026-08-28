@@ -5,15 +5,17 @@ import android.content.SharedPreferences
 import java.time.LocalDate
 
 /**
- * Local cache of today's Health Connect step total and the saved daily goal
+ * Local cache of today's step total (Health Connect when it has records,
+ * otherwise the on-device TYPE_STEP_COUNTER delta) and the saved daily goal
  * consumer used by Walking Tracker (and the Home steps tile).
- * The live count always comes from Health Connect; this store never invents
- * demo/sample steps. A previous day's cache starts the new day at zero.
+ * This store never invents demo/sample steps. A previous day's cache starts
+ * the new day at zero. The hardware counter baseline is kept across days.
  */
 object StepsStore {
     private const val PREFS_NAME = "steps_tracker"
     private const val KEY_STEPS = "today_steps"
     private const val KEY_STEPS_DATE = "steps_date"
+    private const val KEY_LAST_COUNTER = "last_step_counter"
     private const val DEFAULT_STEPS = 0
 
     private fun prefs(context: Context): SharedPreferences =
@@ -22,6 +24,7 @@ object StepsStore {
     /**
      * Applies the day-rollover rule (a previous day's count starts the new
      * day at zero) and returns today's cached step count.
+     * Does not reset the hardware counter baseline.
      */
     fun loadToday(context: Context): Int {
         val p = prefs(context)
@@ -29,7 +32,6 @@ object StepsStore {
         val savedDate = p.getString(KEY_STEPS_DATE, null)
             ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         if (savedDate != null && savedDate.isBefore(today)) {
-            // A previous day's count: start the new day at zero.
             p.edit()
                 .putInt(KEY_STEPS, 0)
                 .putString(KEY_STEPS_DATE, today.toString())
@@ -43,5 +45,30 @@ object StepsStore {
             .putInt(KEY_STEPS, steps)
             .putString(KEY_STEPS_DATE, LocalDate.now().toString())
             .apply()
+    }
+
+    fun lastCounter(context: Context): Long =
+        prefs(context).getLong(KEY_LAST_COUNTER, StepCounterMath.UNSET_COUNTER)
+
+    /**
+     * Applies one TYPE_STEP_COUNTER hardware sample and persists today's
+     * total plus the new baseline. Returns the new today total.
+     */
+    fun applyCounterEvent(context: Context, counter: Long): Int {
+        val today = loadToday(context)
+        val tick = StepCounterMath.onTick(today, lastCounter(context), counter)
+        prefs(context).edit()
+            .putInt(KEY_STEPS, tick.todaySteps)
+            .putString(KEY_STEPS_DATE, LocalDate.now().toString())
+            .putLong(KEY_LAST_COUNTER, tick.lastCounter)
+            .apply()
+        return tick.todaySteps
+    }
+
+    /** One TYPE_STEP_DETECTOR event is exactly one real step. */
+    fun addDetectedStep(context: Context): Int {
+        val next = loadToday(context) + 1
+        save(context, next)
+        return next
     }
 }

@@ -1,5 +1,18 @@
 package com.novaai.calorietracker.ui.screens.walking
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.*
@@ -28,7 +41,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.novaai.calorietracker.R
+import com.novaai.calorietracker.data.HealthConnectSteps
 import com.novaai.calorietracker.data.HealthConnectStepsReader
+import com.novaai.calorietracker.data.StepCounterHardware
 import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.data.TodayStepsRead
 import com.novaai.calorietracker.data.TodayStepsStatus
@@ -55,6 +70,8 @@ private val weeklySteps = listOf(
     DaySteps(R.string.streaks_day_sun, 0),
 )
 
+private const val HC_LOG = "NovaHealthConnect"
+
 @Composable
 fun WalkingTrackerScreen(navController: NavController) {
     val context = LocalContext.current
@@ -63,30 +80,60 @@ fun WalkingTrackerScreen(navController: NavController) {
     var isTracking by remember { mutableStateOf(false) }
     var todaySteps by remember { mutableIntStateOf(0) }
     var hcStatus by remember { mutableStateOf(TodayStepsStatus.UNAVAILABLE) }
+    val hcHasRecords = remember { mutableStateOf(false) }
+    val mainHandler = remember { Handler(Looper.getMainLooper()) }
     val stepGoal = remember {
         UserProfileStore.load(context).dailyStepGoal ?: DEFAULT_STEP_GOAL
     }
 
+    fun hasActivityRecognition(): Boolean {
+        if (Build.VERSION.SDK_INT < 29) return true
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACTIVITY_RECOGNITION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
     fun applyRead(read: TodayStepsRead) {
-        val steps = if (read.status == TodayStepsStatus.OK) read.steps else 0
-        todaySteps = steps
         hcStatus = read.status
-        StepsStore.save(context, steps)
+        hcHasRecords.value = read.hasRecords
+        val sensorToday = StepsStore.loadToday(context)
+        val steps = HealthConnectSteps.displayedSteps(read, sensorToday)
+        Log.i(
+            HC_LOG,
+            "apply_read status=${read.status} hcSteps=${read.steps} hasRecords=${read.hasRecords} " +
+                "sensorToday=$sensorToday displayed=$steps"
+        )
+        todaySteps = steps
+        if (read.status == TodayStepsStatus.OK && read.hasRecords) {
+            StepsStore.save(context, read.steps)
+        }
     }
 
     val permissionContract = remember { HealthConnectStepsReader.permissionContract() }
     val permissionLauncher = rememberLauncherForActivityResult(permissionContract) { granted ->
+        Log.i(
+            HC_LOG,
+            "permission_result granted=$granted requested=${HealthConnectStepsReader.PERMISSIONS}"
+        )
         scope.launch {
             applyRead(HealthConnectStepsReader.readToday(context))
-            if (granted.containsAll(HealthConnectStepsReader.PERMISSIONS)) {
-                isTracking = true
-            }
+            isTracking = true
+        }
+    }
+    val activityRecLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        Log.i(HC_LOG, "activity_recognition_result granted=$granted")
+        if (granted) {
+            isTracking = true
         }
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                Log.i(HC_LOG, "walking_resumed")
                 scope.launch { applyRead(HealthConnectStepsReader.readToday(context)) }
             }
         }
@@ -95,7 +142,83 @@ fun WalkingTrackerScreen(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
+        Log.i(HC_LOG, "walking_opened")
+        StepCounterHardware.logAvailability(context)
         applyRead(HealthConnectStepsReader.readToday(context))
+    }
+
+    DisposableEffect(isTracking) {
+        if (!isTracking || !hasActivityRecognition()) {
+            Log.i(HC_LOG, "step_listener_skip isTracking=$isTracking activityRec=${hasActivityRecognition()}")
+            return@DisposableEffect onDispose { }
+        }
+        val sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        if (sm == null) {
+            Log.i(HC_LOG, "step_counter_register_skip no_sensor_manager")
+            return@DisposableEffect onDispose { }
+        }
+        val counterSensor = StepCounterHardware.stepCounter(context)
+        val detectorSensor = StepCounterHardware.stepDetector(context)
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                when (event.sensor.type) {
+                    Sensor.TYPE_STEP_COUNTER -> {
+                        val counter = event.values[0].toLong()
+                        val last = StepsStore.lastCounter(context)
+                        // First COUNTER sample is a baseline only. Samsung SM-A715F
+                        // did not emit later COUNTER events while walking; live
+                        // increments come from TYPE_STEP_DETECTOR so we do not
+                        // also apply COUNTER deltas (that would double-count).
+                        val today = if (last < 0L) {
+                            StepsStore.applyCounterEvent(context, counter)
+                        } else {
+                            StepsStore.loadToday(context)
+                        }
+                        Log.i(
+                            HC_LOG,
+                            "sensor_tick type=COUNTER raw=$counter last=$last today=$today " +
+                                "hcHasRecords=${hcHasRecords.value} ${StepCounterHardware.describe(event.sensor)}"
+                        )
+                    }
+                    Sensor.TYPE_STEP_DETECTOR -> {
+                        val today = StepsStore.addDetectedStep(context)
+                        Log.i(
+                            HC_LOG,
+                            "sensor_tick type=DETECTOR raw=${event.values[0]} today=$today " +
+                                "hcHasRecords=${hcHasRecords.value} ${StepCounterHardware.describe(event.sensor)}"
+                        )
+                        mainHandler.post {
+                            if (!hcHasRecords.value) {
+                                todaySteps = today
+                            }
+                        }
+                    }
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                Log.i(
+                    HC_LOG,
+                    "sensor_accuracy type=${sensor?.type} accuracy=$accuracy"
+                )
+            }
+        }
+        val delay = SensorManager.SENSOR_DELAY_FASTEST
+        val counterOk = if (counterSensor != null) {
+            sm.registerListener(listener, counterSensor, delay, 0)
+        } else false
+        val detectorOk = if (detectorSensor != null) {
+            sm.registerListener(listener, detectorSensor, delay, 0)
+        } else false
+        Log.i(
+            HC_LOG,
+            "step_listeners_registered counterOk=$counterOk detectorOk=$detectorOk " +
+                "counter=${StepCounterHardware.describe(counterSensor)} " +
+                "detector=${StepCounterHardware.describe(detectorSensor)}"
+        )
+        onDispose {
+            sm.unregisterListener(listener)
+            Log.i(HC_LOG, "step_listeners_unregistered")
+        }
     }
 
     LaunchedEffect(isTracking) {
@@ -119,10 +242,19 @@ fun WalkingTrackerScreen(navController: NavController) {
         item {
             StepHeroCard(todaySteps, stepGoal, isTracking) {
                 if (isTracking) {
+                    Log.i(HC_LOG, "pause_tracking")
                     isTracking = false
+                } else if (!hasActivityRecognition()) {
+                    Log.i(HC_LOG, "activity_recognition_launcher_invoked")
+                    activityRecLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                 } else if (hcStatus == TodayStepsStatus.PERMISSION_REQUIRED) {
+                    Log.i(
+                        HC_LOG,
+                        "permission_launcher_invoked permissions=${HealthConnectStepsReader.PERMISSIONS}"
+                    )
                     permissionLauncher.launch(HealthConnectStepsReader.PERMISSIONS)
                 } else {
+                    Log.i(HC_LOG, "start_tracking sensor_fallback hcStatus=$hcStatus")
                     isTracking = true
                     scope.launch { applyRead(HealthConnectStepsReader.readToday(context)) }
                 }
