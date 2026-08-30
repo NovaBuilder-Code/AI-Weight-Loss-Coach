@@ -22,13 +22,24 @@ object StepCounterHardware {
 
     fun describe(sensor: Sensor?): String {
         if (sensor == null) return "null"
-        return "name=${sensor.name} vendor=${sensor.vendor} version=${sensor.version} type=${sensor.type}"
+        return "name=${sensor.name} vendor=${sensor.vendor} version=${sensor.version} " +
+            "type=${sensor.type} wakeup=${sensor.isWakeUpSensor} " +
+            "fifoMax=${sensor.fifoMaxEventCount} fifoRes=${sensor.fifoReservedEventCount} " +
+            "minDelay=${sensor.minDelay} maxDelay=${sensor.maxDelay} " +
+            "reportingMode=${sensor.reportingMode}"
     }
 
     fun logAvailability(context: Context) {
+        val sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val counter = sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        val counterWake = sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER, true)
+        val detector = sm?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+        val detectorWake = sm?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR, true)
         Log.i(
             TAG,
-            "step_hardware counter=${hasStepCounter(context)} detector=${hasStepDetector(context)}"
+            "step_hardware counter=${counter != null} detector=${detector != null} " +
+                "counterWake=${counterWake != null} detectorWake=${detectorWake != null} " +
+                "counter=${describe(counter)} detector=${describe(detector)}"
         )
     }
 

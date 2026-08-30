@@ -8,8 +8,11 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
+import android.os.PowerManager
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -32,6 +35,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +47,7 @@ import androidx.navigation.NavController
 import com.novaai.calorietracker.R
 import com.novaai.calorietracker.data.HealthConnectSteps
 import com.novaai.calorietracker.data.HealthConnectStepsReader
+import com.novaai.calorietracker.data.NativeStepState
 import com.novaai.calorietracker.data.StepCounterHardware
 import com.novaai.calorietracker.data.StepsStore
 import com.novaai.calorietracker.data.TodayStepsRead
@@ -75,6 +80,7 @@ private const val HC_LOG = "NovaHealthConnect"
 @Composable
 fun WalkingTrackerScreen(navController: NavController) {
     val context = LocalContext.current
+    val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     var isTracking by remember { mutableStateOf(false) }
@@ -132,6 +138,7 @@ fun WalkingTrackerScreen(navController: NavController) {
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            Log.i(HC_LOG, "walking_lifecycle event=$event isTracking=$isTracking state=${lifecycleOwner.lifecycle.currentState}")
             if (event == Lifecycle.Event.ON_RESUME) {
                 Log.i(HC_LOG, "walking_resumed")
                 scope.launch { applyRead(HealthConnectStepsReader.readToday(context)) }
@@ -148,6 +155,15 @@ fun WalkingTrackerScreen(navController: NavController) {
     }
 
     DisposableEffect(isTracking) {
+        view.keepScreenOn = isTracking
+        Log.i(HC_LOG, "keep_screen_on isTracking=$isTracking viewKeepScreenOn=${view.keepScreenOn}")
+        onDispose {
+            view.keepScreenOn = false
+            Log.i(HC_LOG, "keep_screen_on cleared")
+        }
+    }
+
+    DisposableEffect(isTracking) {
         if (!isTracking || !hasActivityRecognition()) {
             Log.i(HC_LOG, "step_listener_skip isTracking=$isTracking activityRec=${hasActivityRecognition()}")
             return@DisposableEffect onDispose { }
@@ -157,67 +173,160 @@ fun WalkingTrackerScreen(navController: NavController) {
             Log.i(HC_LOG, "step_counter_register_skip no_sensor_manager")
             return@DisposableEffect onDispose { }
         }
+
         val counterSensor = StepCounterHardware.stepCounter(context)
         val detectorSensor = StepCounterHardware.stepDetector(context)
-        val listener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                when (event.sensor.type) {
-                    Sensor.TYPE_STEP_COUNTER -> {
-                        val counter = event.values[0].toLong()
-                        val last = StepsStore.lastCounter(context)
-                        // First COUNTER sample is a baseline only. Samsung SM-A715F
-                        // did not emit later COUNTER events while walking; live
-                        // increments come from TYPE_STEP_DETECTOR so we do not
-                        // also apply COUNTER deltas (that would double-count).
-                        val today = if (last < 0L) {
-                            StepsStore.applyCounterEvent(context, counter)
-                        } else {
-                            StepsStore.loadToday(context)
-                        }
-                        Log.i(
-                            HC_LOG,
-                            "sensor_tick type=COUNTER raw=$counter last=$last today=$today " +
-                                "hcHasRecords=${hcHasRecords.value} ${StepCounterHardware.describe(event.sensor)}"
-                        )
-                    }
-                    Sensor.TYPE_STEP_DETECTOR -> {
-                        val today = StepsStore.addDetectedStep(context)
-                        Log.i(
-                            HC_LOG,
-                            "sensor_tick type=DETECTOR raw=${event.values[0]} today=$today " +
-                                "hcHasRecords=${hcHasRecords.value} ${StepCounterHardware.describe(event.sensor)}"
-                        )
-                        mainHandler.post {
-                            if (!hcHasRecords.value) {
-                                todaySteps = today
-                            }
-                        }
-                    }
+        var sessionStarted = false
+        var lastEventElapsed = SystemClock.elapsedRealtime()
+        val sensorThread = HandlerThread("nova-steps").apply { start() }
+        val sensorHandler = Handler(sensorThread.looper)
+
+        fun emitNative(after: NativeStepState, kind: String, eventTs: Long) {
+            val uiValue = after.todaySteps
+            lastEventElapsed = SystemClock.elapsedRealtime()
+            Log.i(
+                HC_LOG,
+                "step_event kind=$kind wallMs=$lastEventElapsed eventTs=$eventTs " +
+                    "detectorSince=${after.detectorSince} counterRaw=${after.lastCounter} " +
+                    "counterDelta=${after.counterDelta()} merged=${after.todaySteps} " +
+                    "ui=$uiValue hcHasRecords=${hcHasRecords.value}"
+            )
+            mainHandler.post {
+                if (!hcHasRecords.value) {
+                    todaySteps = uiValue
+                    Log.i(HC_LOG, "ui_displayed steps=$todaySteps")
+                } else {
+                    Log.i(HC_LOG, "ui_skipped_native hcHasRecords=true hcDisplayed=$todaySteps")
                 }
             }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        }
+
+        val counterListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
+                val counter = event.values[0].toLong()
+                val before = StepsStore.snapshot(context)
+                val after = if (!sessionStarted) {
+                    sessionStarted = true
+                    StepsStore.startTrackingSession(context, counter)
+                } else {
+                    StepsStore.applyCounterEvent(context, counter)
+                }
                 Log.i(
                     HC_LOG,
-                    "sensor_accuracy type=${sensor?.type} accuracy=$accuracy"
+                    "sensor_raw COUNTER=$counter last=${before.lastCounter} " +
+                        "baseline=${after.baselineCounter} counterDelta=${after.counterDelta()} " +
+                        "detectorSince=${after.detectorSince} calc=${after.todaySteps} " +
+                        "sessionStarted=$sessionStarted " +
+                        StepCounterHardware.describe(event.sensor)
                 )
+                emitNative(after, "COUNTER", event.timestamp)
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                Log.i(HC_LOG, "sensor_accuracy type=${sensor?.type} accuracy=$accuracy")
             }
         }
+        val detectorListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type != Sensor.TYPE_STEP_DETECTOR) return
+                val after = StepsStore.addDetectedStep(context)
+                Log.i(
+                    HC_LOG,
+                    "sensor_raw DETECTOR=${event.values[0]} " +
+                        "detectorSince=${after.detectorSince} counterDelta=${after.counterDelta()} " +
+                        "calc=${after.todaySteps} " +
+                        StepCounterHardware.describe(event.sensor)
+                )
+                emitNative(after, "DETECTOR", event.timestamp)
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                Log.i(HC_LOG, "sensor_accuracy type=${sensor?.type} accuracy=$accuracy")
+            }
+        }
+
         val delay = SensorManager.SENSOR_DELAY_FASTEST
-        val counterOk = if (counterSensor != null) {
-            sm.registerListener(listener, counterSensor, delay, 0)
-        } else false
         val detectorOk = if (detectorSensor != null) {
-            sm.registerListener(listener, detectorSensor, delay, 0)
+            sm.registerListener(detectorListener, detectorSensor, delay, sensorHandler)
+        } else false
+        val counterOk = if (counterSensor != null) {
+            sm.registerListener(counterListener, counterSensor, delay, sensorHandler)
         } else false
         Log.i(
             HC_LOG,
-            "step_listeners_registered counterOk=$counterOk detectorOk=$detectorOk " +
+            "step_listeners_registered reason=start counterOk=$counterOk detectorOk=$detectorOk " +
+                "separateListeners=true delay=FASTEST samplingPeriodUs=0 maxReportLatency=unset " +
+                "handler=sensorThread noWatchdogReregister=true " +
                 "counter=${StepCounterHardware.describe(counterSensor)} " +
                 "detector=${StepCounterHardware.describe(detectorSensor)}"
         )
+
+        var probe: SensorEventListener? = null
+        fun clearProbe() {
+            val p = probe ?: return
+            sm.unregisterListener(p)
+            probe = null
+            Log.i(HC_LOG, "counter_probe_unregistered")
+        }
+        val probeListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
+                val counter = event.values[0].toLong()
+                val before = StepsStore.snapshot(context)
+                val after = StepsStore.applyCounterEvent(context, counter)
+                Log.i(
+                    HC_LOG,
+                    "counter_probe raw=$counter last=${before.lastCounter} " +
+                        "baseline=${after.baselineCounter} counterDelta=${after.counterDelta()} " +
+                        "merged=${after.todaySteps} detectorSince=${after.detectorSince}"
+                )
+                emitNative(after, "PROBE", event.timestamp)
+                clearProbe()
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+
+        val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+        val wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "novaai:steps")
+        wakeLock?.setReferenceCounted(false)
+        if (wakeLock != null && !wakeLock.isHeld) {
+            wakeLock.acquire(30 * 60 * 1000L)
+            Log.i(HC_LOG, "step_wakelock acquired")
+        }
+
+        val flusher = object : Runnable {
+            override fun run() {
+                sm.flush(counterListener)
+                sm.flush(detectorListener)
+                val silent = SystemClock.elapsedRealtime() - lastEventElapsed
+                if (silent > 10_000L && probe == null && counterSensor != null) {
+                    probe = probeListener
+                    val ok = sm.registerListener(
+                        probeListener,
+                        counterSensor,
+                        SensorManager.SENSOR_DELAY_FASTEST,
+                        sensorHandler
+                    )
+                    Log.i(HC_LOG, "counter_probe_register ok=$ok silentMs=$silent")
+                    sensorHandler.postDelayed({ clearProbe() }, 1_500L)
+                } else if (silent > 5_000L) {
+                    Log.i(HC_LOG, "sensor_flush silentMs=$silent listenersStillRegistered=true")
+                }
+                sensorHandler.postDelayed(this, 2_000L)
+            }
+        }
+        sensorHandler.postDelayed(flusher, 2_000L)
+
         onDispose {
-            sm.unregisterListener(listener)
-            Log.i(HC_LOG, "step_listeners_unregistered")
+            sensorHandler.removeCallbacks(flusher)
+            clearProbe()
+            sm.unregisterListener(counterListener)
+            sm.unregisterListener(detectorListener)
+            Log.i(HC_LOG, "step_listeners_unregistered reason=dispose")
+            if (wakeLock != null && wakeLock.isHeld) {
+                wakeLock.release()
+                Log.i(HC_LOG, "step_wakelock released")
+            }
+            sensorThread.quitSafely()
         }
     }
 
@@ -225,6 +334,11 @@ fun WalkingTrackerScreen(navController: NavController) {
         if (!isTracking) return@LaunchedEffect
         while (true) {
             delay(30_000)
+            val resumed = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+            if (!resumed) {
+                Log.i(HC_LOG, "hc_poll_skip not_resumed state=${lifecycleOwner.lifecycle.currentState}")
+                continue
+            }
             applyRead(HealthConnectStepsReader.readToday(context))
         }
     }
@@ -510,3 +624,4 @@ private fun AchievementsCard() {
         }
     }
 }
+
